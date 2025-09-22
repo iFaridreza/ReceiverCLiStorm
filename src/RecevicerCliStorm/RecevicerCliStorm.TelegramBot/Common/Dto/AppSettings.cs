@@ -1,0 +1,21 @@
+﻿namespace RecevicerCliStorm.TelegramBot.Common.Dto;
+
+public class AppSettings
+{
+    public string Token { get; set; } = string.Empty;
+    public string DatabaseName { get; set; } = string.Empty;
+    public string SessionsPath { get; set; } = string.Empty;
+    public string ApiId { get; set; } = string.Empty;
+    public string ApiHash { get; set; } = string.Empty;
+    public string ProxyPath { get; set; } = string.Empty;
+    public string FaPath { get; set; } = string.Empty;
+    public string EnPath { get; set; } = string.Empty;
+    public string UsernameLog { get; set; } = string.Empty;
+    public string Developer { get; set; } = string.Empty;
+    public bool UseProxy { get; set; }
+    public bool UseLogCLi { get; set; }
+    public long AskTimeOutMinute { get; set; }
+    public IDictionary<string, string> CommandsSudo { get; set; } = new Dictionary<string, string>();
+    public IDictionary<string, string> UsernameForceJoin { get; set; } = new Dictionary<string, string>();
+    public long[] Sudos { get; set; } = [];
+}
