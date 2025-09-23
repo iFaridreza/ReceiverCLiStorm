@@ -3,44 +3,16 @@
   "WorkspaceRootPath": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\irepository\\iusersteprepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\irepository\\iusersteprepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\domain\\userstep.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\domain\\userstep.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\irepository\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\irepository\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\irepository\\isudorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\irepository\\isudorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\irepository\\isessionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\irepository\\isessionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\irepository\\isessioninforepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\irepository\\isessioninforepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\domain\\sudo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\domain\\sudo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\domain\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\domain\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\common\\manager\\servicesmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\common\\manager\\servicesmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\recevicerclistorm.telegrambot.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\recevicerclistorm.telegrambot.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\common\\utils.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\common\\utils.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -59,131 +31,40 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "IUserStepRepository.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserStepRepository.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserStepRepository.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserStepRepository.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserStepRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAkAAAAAAAAAA==",
+              "Title": "ServicesManager.cs",
+              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\Manager\\ServicesManager.cs",
+              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Common\\Manager\\ServicesManager.cs",
+              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\Manager\\ServicesManager.cs",
+              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Common\\Manager\\ServicesManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T02:19:03.613Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "IUserRepository.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserRepository.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserRepository.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserRepository.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\IUserRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T02:18:37.148Z",
+              "WhenOpened": "2025-09-23T00:40:29.916Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "UserStep.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\UserStep.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\UserStep.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\UserStep.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\UserStep.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T02:17:32.465Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "ISessionInfoRepository.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionInfoRepository.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionInfoRepository.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionInfoRepository.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionInfoRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T02:15:47.433Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ISessionRepository.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionRepository.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionRepository.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionRepository.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISessionRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T02:13:15.842Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "User.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T02:11:47.859Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ISudoRepository.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISudoRepository.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISudoRepository.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISudoRepository.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\IRepository\\ISudoRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T00:47:13.122Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Sudo.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\Sudo.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\Sudo.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\Sudo.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\Sudo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T00:35:44.585Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "RecevicerCliStorm.TelegramBot",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-09-22T00:20:31.028Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
               "Title": "Program.cs",
               "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Program.cs",
               "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Program.cs",
               "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Program.cs",
               "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T00:17:11.336Z",
+              "WhenOpened": "2025-09-23T00:38:27.149Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Utils.cs",
+              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\Utils.cs",
+              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Common\\Utils.cs",
+              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\Utils.cs",
+              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Common\\Utils.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-23T00:19:11.377Z",
               "EditorCaption": ""
             }
           ]

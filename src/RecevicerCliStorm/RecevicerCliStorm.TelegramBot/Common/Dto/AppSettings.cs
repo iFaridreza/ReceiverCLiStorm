@@ -16,6 +16,6 @@ public class AppSettings
     public bool UseLogCLi { get; set; }
     public long AskTimeOutMinute { get; set; }
     public IDictionary<string, string> CommandsSudo { get; set; } = new Dictionary<string, string>();
-    public IDictionary<string, string> UsernameForceJoin { get; set; } = new Dictionary<string, string>();
+    public IDictionary<string, string> UsernamesForceJoin { get; set; } = new Dictionary<string, string>();
     public long[] Sudos { get; set; } = [];
 }

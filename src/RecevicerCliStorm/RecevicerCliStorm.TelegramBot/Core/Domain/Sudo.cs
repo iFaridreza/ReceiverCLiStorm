@@ -4,4 +4,5 @@ public class Sudo
 {
     public int Id { get; set; }
     public long ChatId { get; set; }
+    public ELanguage Language { get; set; }
 }

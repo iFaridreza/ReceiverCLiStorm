@@ -1,12 +1,8 @@
-﻿using System.Globalization;
+﻿using RecevicerCliStorm.TelegramBot.Common;
+using RecevicerCliStorm.TelegramBot.Common.Dto;
 
-Console.WriteLine("Hello, World!");
+AppSettings appSettings = Utils.BindConfiguration();
 
-CultureInfo custom = new("en-US");
-custom.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
-CultureInfo.DefaultThreadCurrentCulture = custom;
-CultureInfo.DefaultThreadCurrentUICulture = custom;
+Utils.CreateDir(appSettings.SessionsPath);
 
-var x = DateOnly.FromDateTime(DateTime.Now);
-
-Console.WriteLine(x);
+Console.ReadKey();
