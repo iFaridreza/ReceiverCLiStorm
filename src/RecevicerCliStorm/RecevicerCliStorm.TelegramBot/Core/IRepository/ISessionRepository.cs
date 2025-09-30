@@ -6,7 +6,7 @@ public interface ISessionRepository
 {
     Task Create(Session session);
     Task<bool> Any(string countryCode, string number);
-    Task Update(Session session);
+    Task UpdateStatus(Session session,ESessionStatus eSessionStatus);
     Task Get(string countryCode , string number);
     Task<IEnumerable<Session>> GetAll();
 }

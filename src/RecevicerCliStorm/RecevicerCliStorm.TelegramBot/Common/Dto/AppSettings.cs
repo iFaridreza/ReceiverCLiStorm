@@ -10,7 +10,7 @@ public class AppSettings
     public string ProxyPath { get; set; } = string.Empty;
     public string FaPath { get; set; } = string.Empty;
     public string EnPath { get; set; } = string.Empty;
-    public string UsernameLog { get; set; } = string.Empty;
+    public string LogChatId { get; set; } = string.Empty;
     public string Developer { get; set; } = string.Empty;
     public bool UseProxy { get; set; }
     public bool UseLogCLi { get; set; }

@@ -3,11 +3,12 @@ using PhoneNumbers;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
 using RecevicerCliStorm.TelegramBot.Common.Manager;
 using RecevicerCliStorm.TelegramBot.Core.Domain;
+using System.Runtime.CompilerServices;
 
 namespace RecevicerCliStorm.TelegramBot.Common;
 
 public static class Utils
-{
+{   
     public static AppSettings BindConfiguration()
     {
         const string fileName = "appsettings.json";
@@ -20,7 +21,7 @@ public static class Utils
 
         return appSettings;
     }
-
+    
     public static void CreateDir(string dir)
     {
         if (Directory.Exists(dir))
@@ -76,8 +77,8 @@ public static class Utils
 
         return new InfoPhoneNumber()
         {
-            CodeCountry = regionCountry,
-            ShortCodeCountry = regionCode,
+            CountryCode = regionCountry,
+            ShortCountryCode = regionCode,
             PhoneNumber = formattedNumber.Replace(regionCountry, string.Empty)
         };
     }
