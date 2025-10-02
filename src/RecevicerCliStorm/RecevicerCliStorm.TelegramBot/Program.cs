@@ -1,6 +1,10 @@
-﻿using RecevicerCliStorm.TelegramBot.Common;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RecevicerCliStorm.TelegramBot.Bot;
+using RecevicerCliStorm.TelegramBot.Common;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
 using RecevicerCliStorm.TelegramBot.Common.Manager;
+using RecevicerCliStorm.TelegramBot.Core.IRepository;
+using RecevicerCliStorm.TelegramBot.Infrastructer;
 
 AppSettings appSettings = Utils.BindConfiguration();
 
@@ -12,8 +16,61 @@ ServicesManager.InjectRepository();
 ServicesManager.InjectTelegramBot(appSettings.Token);
 ServicesManager.InjectTelegramLogger(appSettings.Token, appSettings.LogChatId);
 ServicesManager.InjectWTelegramFactory();
+//ServicesManager.InjectStepTrigger();
 
-ServicesManager.BuildServices();
+IServiceProvider serviceProvider = ServicesManager.BuildServices();
 
+using IServiceScope serviceScope = serviceProvider.CreateScope();
 
-Console.ReadKey();
+Context context = serviceScope.ServiceProvider.GetRequiredService<Context>();
+context.Database.EnsureCreated();
+
+ISudoRepository sudoRepository = serviceScope.ServiceProvider.GetRequiredService<ISudoRepository>();
+ISettingsRepository settingsRepository = serviceScope.ServiceProvider.GetRequiredService<ISettingsRepository>();
+ISessionInfoRepository sessionInfoRepository = serviceScope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
+
+foreach (long sudo in appSettings.Sudos)
+{
+    bool any = await sudoRepository.Any(sudo);
+
+    if (!any)
+    {
+        await sudoRepository.Create(new()
+        {
+            ChatId = sudo
+        });
+    }
+}
+
+bool anySettings = await settingsRepository.Any();
+
+if (!anySettings)
+{
+    await settingsRepository.Create(new()
+    {
+        UseProxy = appSettings.UseProxy,
+        UseChangeBio = appSettings.UseChangeBio,
+        UseCheckReport = appSettings.UseCheckReport,
+        UseLogCLI = appSettings.UseLogCLI,
+    });
+}
+
+bool anySessionInfo = await sessionInfoRepository.Any();
+
+if (!anySessionInfo)
+{
+    await sessionInfoRepository.Create(new()
+    {
+        ApiHash = appSettings.ApiHash,
+        ApiId = appSettings.ApiId
+    });
+}
+
+LanguageManager.SetEn(appSettings.EnPath);
+LanguageManager.SetFa(appSettings.FaPath);
+
+ITelegramBotApi telegramBotApi = serviceScope.ServiceProvider.GetRequiredService<ITelegramBotApi>();
+
+telegramBotApi.Listen();
+
+Console.ReadKey(false);

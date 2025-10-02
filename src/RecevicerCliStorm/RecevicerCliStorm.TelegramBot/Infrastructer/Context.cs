@@ -13,6 +13,7 @@ public class Context : DbContext
     public DbSet<Session> Session { get; set; }
     public DbSet<SessionInfo> SessionInfo { get; set; }
     public DbSet<UserStep> UserStep { get; set; }
+    public DbSet<Settings> Settings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,7 +30,7 @@ public class Context : DbContext
         userBuilder.HasKey(x => x.Id);
         userBuilder.HasIndex(x => x.ChatId).IsUnique();
         userBuilder.Property(x => x.ChatId).HasMaxLength(50).IsRequired();
-        userBuilder.Property(x => x.IsBlock).IsRequired();
+        userBuilder.Property(x => x.IsPermissionToUse).IsRequired().HasDefaultValue(false);
         userBuilder.Property(x => x.Language).HasConversion(new EnumToStringConverter<ELanguage>()).HasDefaultValue(ELanguage.En);
 
 
@@ -62,5 +63,14 @@ public class Context : DbContext
         userStepBuilder.Property(x => x.Step).HasMaxLength(100).IsRequired();
         userStepBuilder.Property(x => x.ExpierDateTime).IsRequired();
         userStepBuilder.Property(x => x.ChatId).HasMaxLength(50).IsRequired();
+
+
+        var settingsBuilder = modelBuilder.Entity<Settings>();
+        settingsBuilder.ToTable("Settings");
+        settingsBuilder.HasKey(x => x.Id);
+        settingsBuilder.Property(x => x.UseProxy).IsRequired();
+        settingsBuilder.Property(x => x.UseChangeBio).IsRequired();
+        settingsBuilder.Property(x => x.UseCheckReport).IsRequired();
+        settingsBuilder.Property(x => x.UseLogCLI).IsRequired();
     }
 }

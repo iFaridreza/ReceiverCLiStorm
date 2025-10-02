@@ -35,8 +35,4 @@
     <PackageReference Include="WTelegramClient" Version="4.3.6" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Common\Trigger\" />
-  </ItemGroup>
-
 </Project>

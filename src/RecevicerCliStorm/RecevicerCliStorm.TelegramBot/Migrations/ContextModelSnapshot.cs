@@ -78,6 +78,29 @@ namespace RecevicerCliStorm.TelegramBot.Migrations
                     b.ToTable("SessionInfo", (string)null);
                 });
 
+            modelBuilder.Entity("RecevicerCliStorm.TelegramBot.Core.Domain.Settings", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("UseChangeBio")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("UseCheckReport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("UseLogCLI")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("UseProxy")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Settings", (string)null);
+                });
+
             modelBuilder.Entity("RecevicerCliStorm.TelegramBot.Core.Domain.Sudo", b =>
                 {
                     b.Property<long>("Id")
@@ -112,8 +135,10 @@ namespace RecevicerCliStorm.TelegramBot.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsBlock")
-                        .HasColumnType("INTEGER");
+                    b.Property<bool>("IsPermissionToUse")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Language")
                         .IsRequired()

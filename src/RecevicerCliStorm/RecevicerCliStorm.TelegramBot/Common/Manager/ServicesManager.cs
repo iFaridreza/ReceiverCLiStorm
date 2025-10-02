@@ -1,8 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 using RecevicerCliStorm.TelegramBot.Bot;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
+using RecevicerCliStorm.TelegramBot.Common.Trigger;
 using RecevicerCliStorm.TelegramBot.Core.IRepository;
 using RecevicerCliStorm.TelegramBot.Infrastructer;
 using RecevicerCliStorm.TelegramBot.Infrastructer.Repository;
@@ -34,6 +36,7 @@ public static class ServicesManager
         _serviceCollection.AddScoped<ISudoRepository, SudoRepository>();
         _serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         _serviceCollection.AddScoped<ISessionInfoRepository, SessionInfoRepository>();
+        _serviceCollection.AddScoped<ISettingsRepository, SettingsRepository>();
     }
 
     public static void InjectWTelegramFactory()
@@ -50,6 +53,25 @@ public static class ServicesManager
                 .WriteTo.TelegramBot(token, chatIdLog)
                 .CreateLogger();
         });
+    }
+
+    public static void InjectStepTrigger()
+    {
+        _serviceCollection.AddLogging();
+
+        _serviceCollection.AddQuartz(x =>
+        {
+            JobKey jobKey = new("TriggerStep");
+            x.AddJob<StepTrigger>(opts => opts.WithIdentity(jobKey));
+
+            x.AddTrigger(opts =>
+                opts.ForJob(jobKey).WithIdentity("Trigger-Step")
+                .WithSimpleSchedule(y => y.WithIntervalInMinutes(1)
+                .RepeatForever())
+                );
+        });
+
+        _serviceCollection.AddQuartzHostedService(x => x.WaitForJobsToComplete = true);
     }
 
     public static void InjectTelegramBot(string token)

@@ -19,9 +19,9 @@ public class UserRepository : IUserRepository
         return any;
     }
 
-    public async Task Block(User user)
+    public async Task AuthorizedPermisionToUse(User user)
     {
-        user.IsBlock = true;
+        user.IsPermissionToUse = true;
         _context.User.Update(user);
         await _context.SaveChangesAsync();
     }
@@ -51,15 +51,15 @@ public class UserRepository : IUserRepository
         return user.Language;
     }
 
-    public async Task<bool> IsBlock(long chatId)
+    public async Task<bool> IsPermisionToUse(long chatId)
     {
         User user = await Get(chatId);
-        return user.IsBlock;
+        return user.IsPermissionToUse;
     }
 
-    public async Task UnBlock(User user)
+    public async Task UnauthorizedPermisionToUse(User user)
     {
-        user.IsBlock = false;
+        user.IsPermissionToUse = false;
         _context.User.Update(user);
         await _context.SaveChangesAsync();
     }

@@ -26,6 +26,22 @@ namespace RecevicerCliStorm.TelegramBot.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Settings",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UseProxy = table.Column<bool>(type: "INTEGER", nullable: false),
+                    UseChangeBio = table.Column<bool>(type: "INTEGER", nullable: false),
+                    UseCheckReport = table.Column<bool>(type: "INTEGER", nullable: false),
+                    UseLogCLI = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Settings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sudo",
                 columns: table => new
                 {
@@ -46,7 +62,7 @@ namespace RecevicerCliStorm.TelegramBot.Migrations
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ChatId = table.Column<long>(type: "INTEGER", maxLength: 50, nullable: false),
-                    IsBlock = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsPermissionToUse = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false),
                     Language = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "En")
                 },
                 constraints: table =>
@@ -139,6 +155,9 @@ namespace RecevicerCliStorm.TelegramBot.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Session");
+
+            migrationBuilder.DropTable(
+                name: "Settings");
 
             migrationBuilder.DropTable(
                 name: "Sudo");

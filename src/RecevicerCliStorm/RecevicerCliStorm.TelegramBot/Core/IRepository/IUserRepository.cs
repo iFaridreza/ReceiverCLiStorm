@@ -6,10 +6,10 @@ public interface IUserRepository
 {
     Task Create(User user);
     Task<bool> Any(long chatId);
-    Task<bool> IsBlock(long chatId);
+    Task<bool> IsPermisionToUse(long chatId);
     Task<User> Get(long chatId);
-    Task Block(User user);
-    Task UnBlock(User user);
+    Task AuthorizedPermisionToUse(User user);
+    Task UnauthorizedPermisionToUse(User user);
     Task<ELanguage> GetLanguage(long chatId);
     Task ChangeLanguage(User user, ELanguage eLanguage);
 }
