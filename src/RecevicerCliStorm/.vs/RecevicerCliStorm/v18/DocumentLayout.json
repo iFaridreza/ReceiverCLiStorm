@@ -7,8 +7,8 @@
       "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\bot\\telegrambotapi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\core\\domain\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\core\\domain\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\common\\replykeyboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\common\\replykeyboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -17,10 +17,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\common\\dto\\appsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\common\\dto\\appsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|z:\\receiverclistorm\\src\\recevicerclistorm\\recevicerclistorm.telegrambot\\common\\replykeyboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2784CBA0-8DD9-44CA-A440-07C8D6980565}|RecevicerCliStorm.TelegramBot\\RecevicerCliStorm.TelegramBot.csproj|solutionrelative:recevicerclistorm.telegrambot\\common\\replykeyboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,26 +38,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "User.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Core\\Domain\\User.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "TelegramBotApi.cs",
+              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
+              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
+              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
+              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAAAFUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-02T17:34:57.947Z",
+              "WhenOpened": "2025-10-02T13:06:11.613Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "ReplyKeyboard.cs",
               "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
               "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
               "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
               "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAABEAAAAAAAAAAAAAABwAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-02T16:08:18.601Z",
               "EditorCaption": ""
@@ -77,19 +73,6 @@
               "ViewState": "AgIAAAgAAAAAAAAAAAAIwBYAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-02T15:41:31.684Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "TelegramBotApi.cs",
-              "DocumentMoniker": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
-              "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
-              "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
-              "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
-              "ViewState": "AgIAAD0AAAAAAAAAAAAowF8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-02T13:06:11.613Z",
               "EditorCaption": ""
             },
             {

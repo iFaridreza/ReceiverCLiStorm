@@ -7,6 +7,7 @@ using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using User = RecevicerCliStorm.TelegramBot.Core.Domain.User;
 
 namespace RecevicerCliStorm.TelegramBot.Bot;
 
@@ -50,6 +51,8 @@ public class TelegramBotApi : ITelegramBotApi
             int messageId = message.MessageId;
 
             string text = message.Text;
+
+            await _telegramBotClient.SendChatAction(chatUserId, ChatAction.Typing);
 
             try
             {
@@ -133,7 +136,17 @@ public class TelegramBotApi : ITelegramBotApi
 
         if (usernameJoinForces.Count > default(int))
         {
+            _logger.Information($"- User {chatUserId} show list to force join bot");
             await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "joinRequest"), ParseMode.Html, replyParameters: messageId, replyMarkup: ReplyKeyboard.JoinForce(usernameJoinForces, Utils.GetText(eLanguageUser, "joined")));
+            return;
+        }
+
+        bool isPermissionToUse = await IsPermissionToUse(chatUserId);
+
+        if (!isPermissionToUse)
+        {
+            _logger.Information($"- User {chatUserId} acsess denid use a bot");
+            await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "acsessDenidUseBot"), ParseMode.Html, replyParameters: messageId, replyMarkup: ReplyKeyboard.Developer(Utils.GetText(eLanguageUser, "developer"), _appSettings.Developer));
             return;
         }
 
@@ -185,5 +198,22 @@ public class TelegramBotApi : ITelegramBotApi
         }
 
         return linkJoinForce;
+    }
+
+    private async Task<bool> IsPermissionToUse(long chatUserId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+        bool anyUser = await userRepository.Any(chatUserId);
+
+        if (!anyUser)
+        {
+            return false;
+        }
+
+        bool isPeremissionToUse = await userRepository.IsPermisionToUse(chatUserId);
+
+        return isPeremissionToUse;
     }
 }

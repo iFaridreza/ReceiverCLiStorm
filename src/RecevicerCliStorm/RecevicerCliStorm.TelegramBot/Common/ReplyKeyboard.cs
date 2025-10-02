@@ -25,4 +25,17 @@ public static class ReplyKeyboard
 
         return inlineKeyboardMarkup;
     }
+
+    public static InlineKeyboardMarkup Developer(string textButtonDeveloper, string developerUsername)
+    {
+        InlineKeyboardMarkup replyKeyboardMarkup = new();
+
+        replyKeyboardMarkup.AddButton(new()
+        {
+            Text = textButtonDeveloper,
+            Url = $"https://t.me/{developerUsername}"
+        });
+
+        return replyKeyboardMarkup;
+    }
 }
