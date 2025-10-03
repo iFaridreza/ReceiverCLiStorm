@@ -22,6 +22,7 @@ public class SessionInfoRepository : ISessionInfoRepository
     public async Task Create(SessionInfo sessionInfo)
     {
         await _context.SessionInfo.AddAsync(sessionInfo);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<SessionInfo> GetSingleFirst()

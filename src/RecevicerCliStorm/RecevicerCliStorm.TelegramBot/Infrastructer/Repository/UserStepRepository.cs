@@ -43,10 +43,4 @@ public class UserStepRepository : IUserStepRepository
         _context.UserStep.Remove(userStep);
         await _context.SaveChangesAsync();
     }
-
-    public async Task Update(UserStep userStep)
-    {
-        _context.UserStep.Update(userStep);
-        await _context.SaveChangesAsync();
-    }
 }

@@ -69,9 +69,14 @@ public class TelegramBotApi : ITelegramBotApi
                         await OnLanguage(chatUserId, messageId);
                     }
                         break;
-                    case "/info":
+                    case "/infouser":
                     {
-                        await OnInfo(chatUserId, messageId);
+                        await OnInfoUser(chatUserId, messageId);
+                    }
+                        break;
+                    case "/cancel":
+                    {
+                        await OnCancel(chatUserId, messageId);
                     }
                         break;
                     default:
@@ -89,17 +94,74 @@ public class TelegramBotApi : ITelegramBotApi
         await Task.CompletedTask;
     }
 
-    private async Task OnInfo(long chatUserId, int messageId)
+    private async Task OnCancel(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+
+        bool anyStep = await userStepRepository.Any(chatUserId);
+
+        if (anyStep)
+        {
+            await userStepRepository.Remove(chatUserId);
+        }
+        
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (anySudo)
+        {
+            ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+            await _telegramBotClient.SendMessage(chatUserId,
+                Utils.GetText(eLanguageSudo, "cancelTask"), ParseMode.Html,
+                replyParameters: messageId);
+            
+            return;
+        }
+        
+        ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+
+        await _telegramBotClient.SendMessage(chatUserId,
+            Utils.GetText(eLanguageUser, "cancelTask"), ParseMode.Html,
+            replyParameters: messageId);
+    }
+
+    private async Task OnInfoUser(long chatUserId, int messageId)
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
         ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
 
         bool anySudo = await sudoRepository.Any(chatUserId);
 
         if (anySudo)
         {
+            _logger.Information($"- Sudo {chatUserId} /info bot");
+
+            bool anyStep = await userStepRepository.Any(chatUserId);
+
+            if (anyStep)
+            {
+                await userStepRepository.Remove(chatUserId);
+            }
+            
+            await userStepRepository.Create(new()
+            {
+                Step = "GetUserChatId",
+                ChatId = chatUserId,
+                ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
+            });
+
+            ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+            await _telegramBotClient.SendMessage(chatUserId,
+                Utils.GetText(eLanguageSudo, "askUserChatId"), ParseMode.Html,
+                replyParameters: messageId);
+
             return;
         }
 
@@ -128,7 +190,8 @@ public class TelegramBotApi : ITelegramBotApi
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
         await _telegramBotClient.SendMessage(chatUserId,
-            string.Format(Utils.GetText(eLanguageUser, "infoUser"), chatUserId,countSessionExists,countSessionSold), ParseMode.Html,
+            string.Format(Utils.GetText(eLanguageUser, "infoUser"), chatUserId, countSessionExists, countSessionSold),
+            ParseMode.Html,
             replyParameters: messageId);
     }
 

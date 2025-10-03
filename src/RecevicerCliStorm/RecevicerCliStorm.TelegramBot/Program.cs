@@ -16,7 +16,7 @@ ServicesManager.InjectRepository();
 ServicesManager.InjectTelegramBot(appSettings.Token);
 ServicesManager.InjectTelegramLogger(appSettings.Token, appSettings.LogChatId);
 ServicesManager.InjectWTelegramFactory();
-//ServicesManager.InjectStepTrigger();
+ServicesManager.InjectStepTrigger();
 
 IServiceProvider serviceProvider = ServicesManager.BuildServices();
 
