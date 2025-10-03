@@ -25,17 +25,24 @@ public class SessionRepository : ISessionRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task Get(string countryCode, string number)
+    public async Task<Session> Get(string countryCode, string number)
     {
         Session session = await _context.Session
             .Include(x => x.SessionInfo)
             .Include(x => x.User)
             .SingleAsync(x => x.CountryCode == countryCode && x.Number == number);
+        return session;
+    }
+
+    public async Task<IEnumerable<Session>> GetAll(long chatUserId)
+    {
+        IEnumerable<Session> sessions = await _context.Session.Include(x=>x.SessionInfo).Include(x=>x.User).Where(x=>x.User.ChatId == chatUserId).ToListAsync();
+        return sessions;
     }
 
     public async Task<IEnumerable<Session>> GetAll()
     {
-        IEnumerable<Session> sessions = await _context.Session.ToListAsync();
+        IEnumerable<Session> sessions = await _context.Session.Include(x=>x.SessionInfo).Include(x=>x.User).ToListAsync();
         return sessions;
     }
 

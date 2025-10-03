@@ -7,6 +7,7 @@ public interface ISessionRepository
     Task Create(Session session);
     Task<bool> Any(string countryCode, string number);
     Task UpdateStatus(Session session,ESessionStatus eSessionStatus);
-    Task Get(string countryCode , string number);
+    Task<Session> Get(string countryCode , string number);
+    Task<IEnumerable<Session>> GetAll(long chatUserId);
     Task<IEnumerable<Session>> GetAll();
 }

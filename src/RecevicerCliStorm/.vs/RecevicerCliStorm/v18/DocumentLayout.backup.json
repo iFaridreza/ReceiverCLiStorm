@@ -44,7 +44,7 @@
               "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
               "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
               "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Bot\\TelegramBotApi.cs",
-              "ViewState": "AgIAAGAAAAAAAAAAAAAAAHoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGgAAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-02T13:06:11.613Z",
               "EditorCaption": ""
@@ -57,10 +57,9 @@
               "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
               "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
               "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Common\\ReplyKeyboard.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAAAABwAAAAwAAAAAAAAAA==",
+              "ViewState": "AgIAAA4AAAAAAAAAAIBJwBwAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-02T16:08:18.601Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-02T16:08:18.601Z"
             },
             {
               "$type": "Document",
@@ -70,10 +69,9 @@
               "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Common\\Dto\\AppSettings.cs",
               "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Common\\Dto\\AppSettings.cs",
               "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Common\\Dto\\AppSettings.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAIwBYAAAAzAAAAAAAAAA==",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAwwBYAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-02T15:41:31.684Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-02T15:41:31.684Z"
             },
             {
               "$type": "Document",
@@ -83,10 +81,9 @@
               "RelativeDocumentMoniker": "RecevicerCliStorm.TelegramBot\\Program.cs",
               "ToolTip": "Z:\\ReceiverCLiStorm\\src\\RecevicerCliStorm\\RecevicerCliStorm.TelegramBot\\Program.cs",
               "RelativeToolTip": "RecevicerCliStorm.TelegramBot\\Program.cs",
-              "ViewState": "AgIAACwAAAAAAAAAAAAAAEsAAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAACkAAAAAAAAAAIBJwEsAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-30T14:07:39.439Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-30T14:07:39.439Z"
             }
           ]
         }

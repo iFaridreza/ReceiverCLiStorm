@@ -2,8 +2,6 @@
 
 public enum ESessionStatus
 {
-    Active,
-    Frozen,
-    TakeOut,
-    Ban
+    Exists,
+    Sold
 }

@@ -45,7 +45,7 @@ public class Context : DbContext
         sessionBuilder.Property(x => x.CountryCode).HasMaxLength(5).IsRequired();
         sessionBuilder.Property(x => x.Number).IsRequired();
         sessionBuilder.Property(x => x.RegisterDate).IsRequired();
-        sessionBuilder.Property(x => x.ESessionStatus).HasConversion(new EnumToStringConverter<ESessionStatus>()).HasDefaultValue(ESessionStatus.Active);
+        sessionBuilder.Property(x => x.ESessionStatus).HasConversion(new EnumToStringConverter<ESessionStatus>()).HasDefaultValue(ESessionStatus.Exists);
         sessionBuilder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         sessionBuilder.HasOne(x => x.SessionInfo).WithMany().HasForeignKey(x => x.SessionInfoId);
 
