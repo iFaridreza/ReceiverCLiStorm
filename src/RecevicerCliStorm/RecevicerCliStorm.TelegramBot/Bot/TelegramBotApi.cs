@@ -51,13 +51,13 @@ public class TelegramBotApi : ITelegramBotApi
             long chatUserId = message.From.Id;
             int messageId = message.MessageId;
 
-            string text = message.Text;
+            string messageText = message.Text;
 
             await _telegramBotClient.SendChatAction(chatUserId, ChatAction.Typing);
 
             try
             {
-                switch (text)
+                switch (messageText)
                 {
                     case "/start":
                     {
@@ -81,6 +81,7 @@ public class TelegramBotApi : ITelegramBotApi
                         break;
                     default:
                     {
+                        await OnStep(chatUserId, messageId, messageText);
                     }
                         break;
                 }
@@ -92,6 +93,78 @@ public class TelegramBotApi : ITelegramBotApi
         });
 
         await Task.CompletedTask;
+    }
+
+    private async Task OnStep(long chatUserId, int messageId, string messageText)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+
+        bool anyStep = await userStepRepository.Any(chatUserId);
+
+        if (!anyStep)
+        {
+            return;
+        }
+
+        UserStep userStep = await userStepRepository.Get(chatUserId);
+
+        string step = userStep.Step;
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (anySudo)
+        {
+            ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+            if (step == "GetUserChatId")
+            {
+                bool validInput = long.TryParse(messageText, out long userChatId);
+
+                if (!validInput)
+                {
+                    await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "invalidInput"),
+                        ParseMode.Html);
+                    return;
+                }
+
+                bool anyUser = await userRepository.Any(userChatId);
+
+                if (!anyUser)
+                {
+                    await _telegramBotClient.SendMessage(chatUserId,
+                        string.Format(Utils.GetText(eLanguageSudo, "userNotExist"), userChatId),
+                        ParseMode.Html);
+                    return;
+                }
+
+                await userStepRepository.Remove(chatUserId);
+
+                IEnumerable<Session> sessions = await sessionRepository.GetAll(userChatId);
+
+                // ReSharper disable once PossibleMultipleEnumeration
+                int countSessionExists = sessions.Count(x => x.ESessionStatus is ESessionStatus.Exists);
+                // ReSharper disable once PossibleMultipleEnumeration
+                int countSessionSold = sessions.Count(x => x.ESessionStatus is ESessionStatus.Sold);
+
+                User user = await userRepository.Get(userChatId);
+
+                string isPerimissionUse = user.IsPermissionToUse ? "🟢" : "🔴";
+
+                await _telegramBotClient.SendMessage(chatUserId,
+                    string.Format(Utils.GetText(eLanguageSudo, "infoUser"), userChatId, countSessionExists,
+                        countSessionSold, isPerimissionUse),
+                    ParseMode.Html,
+                    replyParameters: messageId,
+                    replyMarkup: ReplyKeyboard.StatusPermisionUser(chatUserId,
+                        Utils.GetText(eLanguageSudo, "changePeremission")));
+            }
+
+            return;
+        }
     }
 
     private async Task OnCancel(long chatUserId, int messageId)
@@ -107,7 +180,7 @@ public class TelegramBotApi : ITelegramBotApi
         {
             await userStepRepository.Remove(chatUserId);
         }
-        
+
         bool anySudo = await sudoRepository.Any(chatUserId);
 
         if (anySudo)
@@ -117,10 +190,10 @@ public class TelegramBotApi : ITelegramBotApi
             await _telegramBotClient.SendMessage(chatUserId,
                 Utils.GetText(eLanguageSudo, "cancelTask"), ParseMode.Html,
                 replyParameters: messageId);
-            
+
             return;
         }
-        
+
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
         await _telegramBotClient.SendMessage(chatUserId,
@@ -148,7 +221,7 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 await userStepRepository.Remove(chatUserId);
             }
-            
+
             await userStepRepository.Create(new()
             {
                 Step = "GetUserChatId",
@@ -187,10 +260,13 @@ public class TelegramBotApi : ITelegramBotApi
         // ReSharper disable once PossibleMultipleEnumeration
         int countSessionSold = sessions.Count(x => x.ESessionStatus is ESessionStatus.Sold);
 
-        ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+        User user = await userRepository.Get(chatUserId);
+
+        string isPerimissionUse = user.IsPermissionToUse ? "🟢" : "🔴";
 
         await _telegramBotClient.SendMessage(chatUserId,
-            string.Format(Utils.GetText(eLanguageUser, "infoUser"), chatUserId, countSessionExists, countSessionSold),
+            string.Format(Utils.GetText(user.Language, "infoUser"), chatUserId, countSessionExists, countSessionSold,
+                isPerimissionUse),
             ParseMode.Html,
             replyParameters: messageId);
     }

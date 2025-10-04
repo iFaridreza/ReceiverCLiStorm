@@ -26,6 +26,19 @@ public static class ReplyKeyboard
         return inlineKeyboardMarkup;
     }
 
+    public static InlineKeyboardMarkup StatusPermisionUser(long chatUserId,string textButtonPermisionUser)
+    {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new();
+        
+        inlineKeyboardMarkup.AddButton(new()
+        {
+            Text = textButtonPermisionUser,
+            CallbackData = $"ChangePermision_{chatUserId}"
+        }).AddNewRow();
+
+        return inlineKeyboardMarkup;
+    }
+    
     public static InlineKeyboardMarkup Developer(string textButtonDeveloper, string developerUsername)
     {
         InlineKeyboardMarkup replyKeyboardMarkup = new();

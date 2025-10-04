@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+using Quartz.Spi;
 using RecevicerCliStorm.TelegramBot.Bot;
 using RecevicerCliStorm.TelegramBot.Common;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
@@ -72,5 +74,10 @@ LanguageManager.SetFa(appSettings.FaPath);
 ITelegramBotApi telegramBotApi = serviceScope.ServiceProvider.GetRequiredService<ITelegramBotApi>();
 
 telegramBotApi.Listen();
+
+ISchedulerFactory schedulerFactory = serviceScope.ServiceProvider.GetRequiredService<ISchedulerFactory>();
+IScheduler scheduler = await schedulerFactory.GetScheduler();
+scheduler.JobFactory = serviceScope.ServiceProvider.GetRequiredService<IJobFactory>();
+await scheduler.Start();
 
 Console.ReadKey(false);

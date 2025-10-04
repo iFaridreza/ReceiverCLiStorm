@@ -61,7 +61,7 @@ public static class ServicesManager
 
         _serviceCollection.AddQuartz(x =>
         {
-            JobKey jobKey = new("TriggerStep");
+            JobKey jobKey = new("StepTrigger");
             x.AddJob<StepTrigger>(opts => opts.WithIdentity(jobKey));
 
             x.AddTrigger(opts =>

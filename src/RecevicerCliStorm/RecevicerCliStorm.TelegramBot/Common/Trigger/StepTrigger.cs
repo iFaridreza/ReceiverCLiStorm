@@ -5,6 +5,7 @@ using RecevicerCliStorm.TelegramBot.Core.Domain;
 using RecevicerCliStorm.TelegramBot.Core.IRepository;
 using Serilog;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace RecevicerCliStorm.TelegramBot.Common.Trigger;
 
@@ -60,7 +61,7 @@ public class StepTrigger : IJob
 
                     ELanguage eLanguage = await sudoRepository.GetLanguage(item.ChatId);
 
-                    await _telegramBot.SendMessage(item.ChatId, string.Format(Utils.GetText(eLanguage, "timeOut"), _appSettings.AskTimeOutMinute));
+                    await _telegramBot.SendMessage(item.ChatId, string.Format(Utils.GetText(eLanguage, "timeOut"), _appSettings.AskTimeOutMinute),ParseMode.Html);
 
                 }
                 catch (Exception ex)
