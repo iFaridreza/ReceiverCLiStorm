@@ -33,7 +33,7 @@ public static class ReplyKeyboard
         inlineKeyboardMarkup.AddButton(new()
         {
             Text = textButtonPermisionUser,
-            CallbackData = $"ChangePermision_{chatUserId}"
+            CallbackData = $"ChangePermission_{chatUserId}"
         }).AddNewRow();
 
         return inlineKeyboardMarkup;

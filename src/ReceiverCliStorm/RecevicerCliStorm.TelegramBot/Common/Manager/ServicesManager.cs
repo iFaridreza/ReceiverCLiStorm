@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
+using ReceiverCliStorm.TelegramBot.Bot;
 using RecevicerCliStorm.TelegramBot.Bot;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
 using RecevicerCliStorm.TelegramBot.Common.Trigger;

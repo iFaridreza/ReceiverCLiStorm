@@ -1,15 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RecevicerCliStorm.TelegramBot.Bot;
 using RecevicerCliStorm.TelegramBot.Common;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
 using RecevicerCliStorm.TelegramBot.Core.Domain;
 using RecevicerCliStorm.TelegramBot.Core.IRepository;
+using RecevicerCliStorm.TelegramBot.Infrastructer.Repository;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using User = RecevicerCliStorm.TelegramBot.Core.Domain.User;
 
-namespace RecevicerCliStorm.TelegramBot.Bot;
+namespace ReceiverCliStorm.TelegramBot.Bot;
 
 public class TelegramBotApi : ITelegramBotApi
 {
@@ -150,16 +152,16 @@ public class TelegramBotApi : ITelegramBotApi
                 // ReSharper disable once PossibleMultipleEnumeration
                 int countSessionSold = sessions.Count(x => x.ESessionStatus is ESessionStatus.Sold);
 
-                User user = await userRepository.Get(userChatId);
+                bool isPermissionToUse = await userRepository.IsPermisionToUse(userChatId);
 
-                string isPerimissionUse = user.IsPermissionToUse ? "🟢" : "🔴";
+                string resultPermissionToUse = isPermissionToUse ? "🟢" : "🔴";
 
                 await _telegramBotClient.SendMessage(chatUserId,
                     string.Format(Utils.GetText(eLanguageSudo, "infoUser"), userChatId, countSessionExists,
-                        countSessionSold, isPerimissionUse),
+                        countSessionSold, resultPermissionToUse),
                     ParseMode.Html,
                     replyParameters: messageId,
-                    replyMarkup: ReplyKeyboard.StatusPermisionUser(chatUserId,
+                    replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
                         Utils.GetText(eLanguageSudo, "changePeremission")));
             }
 
@@ -260,13 +262,15 @@ public class TelegramBotApi : ITelegramBotApi
         // ReSharper disable once PossibleMultipleEnumeration
         int countSessionSold = sessions.Count(x => x.ESessionStatus is ESessionStatus.Sold);
 
-        User user = await userRepository.Get(chatUserId);
+        ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
-        string isPerimissionUse = user.IsPermissionToUse ? "🟢" : "🔴";
+        bool isPermissionToUse = await userRepository.IsPermisionToUse(chatUserId);
+
+        string resultPermissionToUse = isPermissionToUse ? "🟢" : "🔴";
 
         await _telegramBotClient.SendMessage(chatUserId,
-            string.Format(Utils.GetText(user.Language, "infoUser"), chatUserId, countSessionExists, countSessionSold,
-                isPerimissionUse),
+            string.Format(Utils.GetText(eLanguageUser, "infoUser"), chatUserId, countSessionExists, countSessionSold,
+                resultPermissionToUse),
             ParseMode.Html,
             replyParameters: messageId);
     }
@@ -459,10 +463,155 @@ public class TelegramBotApi : ITelegramBotApi
         await _telegramBotClient.SetMyCommands(userCommands.Reverse(),
             new BotCommandScopeChat() { ChatId = chatUserId });
     }
-
-    public Task OnUpdate(Update update)
+    
+    public async Task OnUpdate(Update update)
     {
-        throw new NotImplementedException();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (update.CallbackQuery is null ||
+                    update.CallbackQuery.Message is null ||
+                    update.CallbackQuery.Message.Chat.Type != ChatType.Private)
+                {
+                    return;
+                }
+
+                long chatUserId = update.CallbackQuery.Message.Chat.Id;
+                int messageId = update.CallbackQuery.Message.MessageId;
+
+                string? callbackData = update.CallbackQuery.Data;
+
+                if (string.IsNullOrEmpty(callbackData))
+                {
+                    return;
+                }
+                
+                switch (callbackData)
+                {
+                    case "IJoin":
+                    {
+                       await OnUpdateIJoin(chatUserId, messageId);
+                    }
+                        break;
+                    default:
+                    {
+                        if (callbackData.Contains("ChangePermission_"))
+                        {
+                            await OnUpdateChangePermission(chatUserId, messageId,callbackData);
+                        }
+                    }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, nameof(Exception));
+            }
+        });
+
+        await Task.CompletedTask;
+    }
+
+    private async Task OnUpdateChangePermission(long chatUserId, int messageId, string callbackData)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+
+        callbackData = callbackData.Replace("ChangePermission_", string.Empty);
+        long userChatId = Convert.ToInt64(callbackData);
+
+        User user = await userRepository.Get(userChatId);
+
+        if (user.IsPermissionToUse)
+        {
+            await userRepository.UnauthorizedPermisionToUse(user);
+        }
+        else
+        {
+            await userRepository.AuthorizedPermisionToUse(user);
+        }
+
+
+        IEnumerable<Session> sessions = await sessionRepository.GetAll(userChatId);
+
+        // ReSharper disable once PossibleMultipleEnumeration
+        int countSessionExists = sessions.Count(x => x.ESessionStatus is ESessionStatus.Exists);
+        // ReSharper disable once PossibleMultipleEnumeration
+        int countSessionSold = sessions.Count(x => x.ESessionStatus is ESessionStatus.Sold);
+
+        bool isPermissionToUse = await userRepository.IsPermisionToUse(userChatId);
+
+        string resultPermissionToUse = isPermissionToUse ? "🟢" : "🔴";
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        await _telegramBotClient.EditMessageText(chatUserId,messageId,
+            string.Format(Utils.GetText(eLanguageSudo, "infoUser"), userChatId, countSessionExists,
+                countSessionSold, resultPermissionToUse),
+            parseMode:ParseMode.Html,
+            replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
+                Utils.GetText(eLanguageSudo, "changePeremission")));
+
+    }
+
+    private async Task OnUpdateIJoin(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+        Message msgEditReply = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+        
+        ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+
+        Dictionary<string, string> usernameJoinForces = await IsJoinForce(chatUserId);
+        
+        if (usernameJoinForces.Count > default(int))
+        {
+            _logger.Information($"- User {chatUserId} show list to force join bot");
+            
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId,msgEditReply.MessageId,
+                replyMarkup: ReplyKeyboard.JoinForce(usernameJoinForces, Utils.GetText(eLanguageUser, "joined")));
+            
+            return;
+        }
+        
+        bool isPermissionToUse = await IsPermissionToUse(chatUserId);
+
+        if (!isPermissionToUse)
+        {
+            _logger.Information($"- User {chatUserId} access denied use a bot");
+            await _telegramBotClient.EditMessageText(chatUserId,msgEditReply.MessageId, Utils.GetText(eLanguageUser, "acsessDenidUseBot"),
+                ParseMode.Html,
+                replyMarkup: ReplyKeyboard.Developer(Utils.GetText(eLanguageUser, "developer"),
+                    _appSettings.Developer));
+            return;
+        }
+        
+        await _telegramBotClient.EditMessageText(chatUserId,msgEditReply.MessageId, Utils.GetText(eLanguageUser, "start"), ParseMode.Html);
+        
+        if (_appSettings.CommandsUser.Count == default)
+        {
+            return;
+        }
+
+        ICollection<BotCommand> userCommands = [];
+
+        foreach (var item in _appSettings.CommandsUser)
+        {
+            userCommands.Add(new()
+            {
+                Command = item.Key,
+                Description = item.Value
+            });
+        }
+
+        _logger.Information($"- User {chatUserId} command updated");
+
+        await _telegramBotClient.SetMyCommands(userCommands.Reverse(),
+            new BotCommandScopeChat() { ChatId = chatUserId });
     }
 
     private async Task<Dictionary<string, string>> IsJoinForce(long chatUserId)
