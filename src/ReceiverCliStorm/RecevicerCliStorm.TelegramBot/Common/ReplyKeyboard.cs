@@ -26,6 +26,26 @@ public static class ReplyKeyboard
         return inlineKeyboardMarkup;
     }
 
+    public static InlineKeyboardMarkup Reload(string textConfirmReload)
+    {
+        InlineKeyboardMarkup replyKeyboardMarkup = new();
+
+        replyKeyboardMarkup.AddButton(new()
+        {
+            Text = textConfirmReload,
+            CallbackData = "Reload"
+        }).AddNewRow();
+
+        replyKeyboardMarkup.AddButton(new()
+        {
+            Text = "🔙",
+            CallbackData = "Back"
+        });
+
+        return replyKeyboardMarkup;
+    }
+
+
     public static InlineKeyboardMarkup StatusPermisionUser(long chatUserId,string textButtonPermisionUser)
     {
         InlineKeyboardMarkup inlineKeyboardMarkup = new();

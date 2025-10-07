@@ -4,8 +4,8 @@ using RecevicerCliStorm.TelegramBot.Common;
 using RecevicerCliStorm.TelegramBot.Common.Dto;
 using RecevicerCliStorm.TelegramBot.Core.Domain;
 using RecevicerCliStorm.TelegramBot.Core.IRepository;
-using RecevicerCliStorm.TelegramBot.Infrastructer.Repository;
 using Serilog;
+using System.Diagnostics;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -62,29 +62,34 @@ public class TelegramBotApi : ITelegramBotApi
                 switch (messageText)
                 {
                     case "/start":
-                    {
-                        await OnStart(chatUserId, messageId);
-                    }
+                        {
+                            await OnStart(chatUserId, messageId);
+                        }
                         break;
                     case "/language":
-                    {
-                        await OnLanguage(chatUserId, messageId);
-                    }
+                        {
+                            await OnLanguage(chatUserId, messageId);
+                        }
                         break;
                     case "/infouser":
-                    {
-                        await OnInfoUser(chatUserId, messageId);
-                    }
+                        {
+                            await OnInfoUser(chatUserId, messageId);
+                        }
                         break;
                     case "/cancel":
-                    {
-                        await OnCancel(chatUserId, messageId);
-                    }
+                        {
+                            await OnCancel(chatUserId, messageId);
+                        }
+                        break;
+                    case "/reload":
+                        {
+                            await OnReload(chatUserId, messageId);
+                        }
                         break;
                     default:
-                    {
-                        await OnStep(chatUserId, messageId, messageText);
-                    }
+                        {
+                            await OnStep(chatUserId, messageId, messageText);
+                        }
                         break;
                 }
             }
@@ -95,6 +100,28 @@ public class TelegramBotApi : ITelegramBotApi
         });
 
         await Task.CompletedTask;
+    }
+
+    private async Task OnReload(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (!anySudo)
+        {
+            return;
+        }
+
+        _logger.Information($"- Sudo {chatUserId} /reload Bot");
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "reloadAlert"),
+             ParseMode.Html,
+             replyParameters: messageId,
+             replyMarkup: ReplyKeyboard.Reload(Utils.GetText(eLanguageSudo, "reloadConfirm")));
     }
 
     private async Task OnStep(long chatUserId, int messageId, string messageText)
@@ -183,10 +210,14 @@ public class TelegramBotApi : ITelegramBotApi
             await userStepRepository.Remove(chatUserId);
         }
 
+        //Note Delete all step user & cashe remove all 
+
         bool anySudo = await sudoRepository.Any(chatUserId);
 
         if (anySudo)
         {
+            _logger.Information($"- Sudo {chatUserId} /cancel bot");
+
             ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
             await _telegramBotClient.SendMessage(chatUserId,
@@ -195,6 +226,8 @@ public class TelegramBotApi : ITelegramBotApi
 
             return;
         }
+
+        _logger.Information($"- User {chatUserId} /cancel bot");
 
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
@@ -292,19 +325,19 @@ public class TelegramBotApi : ITelegramBotApi
             switch (sudo.Language)
             {
                 case ELanguage.En:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
+                    }
                     break;
                 case ELanguage.Fa:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                    }
                     break;
                 default:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                    }
                     break;
             }
 
@@ -336,19 +369,19 @@ public class TelegramBotApi : ITelegramBotApi
         switch (user.Language)
         {
             case ELanguage.En:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.Fa);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.Fa);
+                }
                 break;
             case ELanguage.Fa:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.En);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.En);
+                }
                 break;
             default:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.En);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.En);
+                }
                 break;
         }
 
@@ -463,7 +496,7 @@ public class TelegramBotApi : ITelegramBotApi
         await _telegramBotClient.SetMyCommands(userCommands.Reverse(),
             new BotCommandScopeChat() { ChatId = chatUserId });
     }
-    
+
     public async Task OnUpdate(Update update)
     {
         _ = Task.Run(async () =>
@@ -486,21 +519,26 @@ public class TelegramBotApi : ITelegramBotApi
                 {
                     return;
                 }
-                
+
                 switch (callbackData)
                 {
                     case "IJoin":
-                    {
-                       await OnUpdateIJoin(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateIJoin(chatUserId, messageId);
+                        }
+                        break;
+                    case "Reload":
+                        {
+                            await OnUpdateReload(chatUserId, messageId);
+                        }
                         break;
                     default:
-                    {
-                        if (callbackData.Contains("ChangePermission_"))
                         {
-                            await OnUpdateChangePermission(chatUserId, messageId,callbackData);
+                            if (callbackData.Contains("ChangePermission_"))
+                            {
+                                await OnUpdateChangePermission(chatUserId, messageId, callbackData);
+                            }
                         }
-                    }
                         break;
                 }
             }
@@ -511,6 +549,53 @@ public class TelegramBotApi : ITelegramBotApi
         });
 
         await Task.CompletedTask;
+    }
+
+    private async Task OnUpdateReload(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        IUserStepRepository userStepRepository = _serviceProvider.GetRequiredService<IUserStepRepository>();
+
+        _logger.Information($"- Sudo {chatUserId} Confirm Reload Bot");
+
+        Message removeButton = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+
+        //Note Delete all step user & cashe remove all 
+
+        Process infoCurrentProcess = Process.GetCurrentProcess();
+
+        string fileName = infoCurrentProcess.MainModule?.FileName!;
+
+        string mutexName = Path.GetFileNameWithoutExtension(fileName);
+
+        using Mutex _mutexReload = new(true, mutexName, out bool createdNew);
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        if (!createdNew)
+        {
+            await _telegramBotClient.EditMessageText(chatUserId, removeButton.MessageId, Utils.GetText(eLanguageSudo, "reloadMultipale"), replyMarkup: null);
+            return;
+        }
+
+        _logger.Information($"- Sudo {chatUserId} Reload Bot Sucsessfully");
+
+        await _telegramBotClient.EditMessageText(chatUserId, removeButton.MessageId, Utils.GetText(eLanguageSudo, "reloadSucsess"), replyMarkup: null);
+
+        try
+        {
+            Process.Start(fileName);
+            Environment.Exit(0);
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            _mutexReload.ReleaseMutex();
+        }
     }
 
     private async Task OnUpdateChangePermission(long chatUserId, int messageId, string callbackData)
@@ -534,7 +619,6 @@ public class TelegramBotApi : ITelegramBotApi
             await userRepository.AuthorizedPermisionToUse(user);
         }
 
-
         IEnumerable<Session> sessions = await sessionRepository.GetAll(userChatId);
 
         // ReSharper disable once PossibleMultipleEnumeration
@@ -548,10 +632,10 @@ public class TelegramBotApi : ITelegramBotApi
 
         ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
-        await _telegramBotClient.EditMessageText(chatUserId,messageId,
+        await _telegramBotClient.EditMessageText(chatUserId, messageId,
             string.Format(Utils.GetText(eLanguageSudo, "infoUser"), userChatId, countSessionExists,
                 countSessionSold, resultPermissionToUse),
-            parseMode:ParseMode.Html,
+            parseMode: ParseMode.Html,
             replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
                 Utils.GetText(eLanguageSudo, "changePeremission")));
 
@@ -563,35 +647,35 @@ public class TelegramBotApi : ITelegramBotApi
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
         Message msgEditReply = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
-        
+
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
         Dictionary<string, string> usernameJoinForces = await IsJoinForce(chatUserId);
-        
+
         if (usernameJoinForces.Count > default(int))
         {
             _logger.Information($"- User {chatUserId} show list to force join bot");
-            
-            await _telegramBotClient.EditMessageReplyMarkup(chatUserId,msgEditReply.MessageId,
+
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, msgEditReply.MessageId,
                 replyMarkup: ReplyKeyboard.JoinForce(usernameJoinForces, Utils.GetText(eLanguageUser, "joined")));
-            
+
             return;
         }
-        
+
         bool isPermissionToUse = await IsPermissionToUse(chatUserId);
 
         if (!isPermissionToUse)
         {
             _logger.Information($"- User {chatUserId} access denied use a bot");
-            await _telegramBotClient.EditMessageText(chatUserId,msgEditReply.MessageId, Utils.GetText(eLanguageUser, "acsessDenidUseBot"),
+            await _telegramBotClient.EditMessageText(chatUserId, msgEditReply.MessageId, Utils.GetText(eLanguageUser, "acsessDenidUseBot"),
                 ParseMode.Html,
                 replyMarkup: ReplyKeyboard.Developer(Utils.GetText(eLanguageUser, "developer"),
                     _appSettings.Developer));
             return;
         }
-        
-        await _telegramBotClient.EditMessageText(chatUserId,msgEditReply.MessageId, Utils.GetText(eLanguageUser, "start"), ParseMode.Html);
-        
+
+        await _telegramBotClient.EditMessageText(chatUserId, msgEditReply.MessageId, Utils.GetText(eLanguageUser, "start"), ParseMode.Html);
+
         if (_appSettings.CommandsUser.Count == default)
         {
             return;
