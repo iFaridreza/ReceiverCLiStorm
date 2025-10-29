@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RecevicerCliStorm.TelegramBot.Infrastructer;
+using ReceiverCliStorm.TelegramBot.Infrastructer;
 
 #nullable disable
 
-namespace RecevicerCliStorm.TelegramBot.Migrations
+namespace ReceiverCliStorm.TelegramBot.Migrations
 {
     [DbContext(typeof(Context))]
     [Migration("20251003152010_Init")]

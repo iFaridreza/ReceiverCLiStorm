@@ -1,4 +1,4 @@
-﻿namespace RecevicerCliStorm.TelegramBot.Core.Domain;
+﻿namespace ReceiverCliStorm.TelegramBot.Core.Domain;
 
 public enum ESessionStatus
 {

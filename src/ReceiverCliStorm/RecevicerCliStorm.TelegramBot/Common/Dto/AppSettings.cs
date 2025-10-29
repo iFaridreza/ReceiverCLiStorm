@@ -1,4 +1,4 @@
-﻿namespace RecevicerCliStorm.TelegramBot.Common.Dto;
+﻿namespace ReceiverCliStorm.TelegramBot.Common.Dto;
 
 public class AppSettings
 {

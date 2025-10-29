@@ -1,7 +1,7 @@
 ﻿using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace RecevicerCliStorm.TelegramBot.Bot;
+namespace ReceiverCliStorm.TelegramBot.Bot;
 
 public interface ITelegramBotApi
 {

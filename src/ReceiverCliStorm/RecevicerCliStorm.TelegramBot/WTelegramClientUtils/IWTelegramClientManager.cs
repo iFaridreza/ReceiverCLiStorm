@@ -1,4 +1,4 @@
-﻿namespace RecevicerCliStorm.TelegramBot.WTelegramClientUtils;
+﻿namespace ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
 
 public interface IWTelegramClientManager
 {

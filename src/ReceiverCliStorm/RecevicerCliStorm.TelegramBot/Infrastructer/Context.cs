@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RecevicerCliStorm.TelegramBot.Core.Domain;
+using ReceiverCliStorm.TelegramBot.Core.Domain;
 
-namespace RecevicerCliStorm.TelegramBot.Infrastructer;
+namespace ReceiverCliStorm.TelegramBot.Infrastructer;
 
 public class Context : DbContext
 {

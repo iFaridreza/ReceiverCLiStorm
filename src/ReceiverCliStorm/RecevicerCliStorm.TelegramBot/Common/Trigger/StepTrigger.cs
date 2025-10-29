@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
-using RecevicerCliStorm.TelegramBot.Common.Dto;
-using RecevicerCliStorm.TelegramBot.Core.Domain;
-using RecevicerCliStorm.TelegramBot.Core.IRepository;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
+using ReceiverCliStorm.TelegramBot.Core.Domain;
+using ReceiverCliStorm.TelegramBot.Core.IRepository;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
-namespace RecevicerCliStorm.TelegramBot.Common.Trigger;
+namespace ReceiverCliStorm.TelegramBot.Common.Trigger;
 
 public class StepTrigger : IJob
 {

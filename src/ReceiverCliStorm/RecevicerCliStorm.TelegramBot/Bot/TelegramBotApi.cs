@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RecevicerCliStorm.TelegramBot.Bot;
-using RecevicerCliStorm.TelegramBot.Common;
-using RecevicerCliStorm.TelegramBot.Common.Dto;
-using RecevicerCliStorm.TelegramBot.Core.Domain;
-using RecevicerCliStorm.TelegramBot.Core.IRepository;
+using ReceiverCliStorm.TelegramBot.Common;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
+using ReceiverCliStorm.TelegramBot.Common.Manager;
+using ReceiverCliStorm.TelegramBot.Core.Domain;
+using ReceiverCliStorm.TelegramBot.Core.IRepository;
 using Serilog;
 using System.Diagnostics;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using User = RecevicerCliStorm.TelegramBot.Core.Domain.User;
+using User = ReceiverCliStorm.TelegramBot.Core.Domain.User;
 
 namespace ReceiverCliStorm.TelegramBot.Bot;
 
@@ -62,34 +62,39 @@ public class TelegramBotApi : ITelegramBotApi
                 switch (messageText)
                 {
                     case "/start":
-                        {
-                            await OnStart(chatUserId, messageId);
-                        }
+                    {
+                        await OnStart(chatUserId, messageId);
+                    }
                         break;
                     case "/language":
-                        {
-                            await OnLanguage(chatUserId, messageId);
-                        }
+                    {
+                        await OnLanguage(chatUserId, messageId);
+                    }
                         break;
                     case "/infouser":
-                        {
-                            await OnInfoUser(chatUserId, messageId);
-                        }
+                    {
+                        await OnInfoUser(chatUserId, messageId);
+                    }
                         break;
                     case "/cancel":
-                        {
-                            await OnCancel(chatUserId, messageId);
-                        }
+                    {
+                        await OnCancel(chatUserId, messageId);
+                    }
                         break;
                     case "/reload":
-                        {
-                            await OnReload(chatUserId, messageId);
-                        }
+                    {
+                        await OnReload(chatUserId, messageId);
+                    }
+                        break;
+                    case "/settings":
+                    {
+                        await OnSettings(chatUserId, messageId);
+                    }
                         break;
                     default:
-                        {
-                            await OnStep(chatUserId, messageId, messageText);
-                        }
+                    {
+                        await OnStep(chatUserId, messageId, messageText);
+                    }
                         break;
                 }
             }
@@ -102,10 +107,11 @@ public class TelegramBotApi : ITelegramBotApi
         await Task.CompletedTask;
     }
 
-    private async Task OnReload(long chatUserId, int messageId)
+    private async Task OnSettings(long chatUserId, int messageId)
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
 
         bool anySudo = await sudoRepository.Any(chatUserId);
 
@@ -114,14 +120,141 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        _logger.Information($"- Sudo {chatUserId} /reload Bot");
+        Settings settings = await settingsRepository.GetSingleFirst();
+
+        _logger.Information($"- Sudo {chatUserId} /settings Bot");
 
         ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
-        await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "reloadAlert"),
-             ParseMode.Html,
-             replyParameters: messageId,
-             replyMarkup: ReplyKeyboard.Reload(Utils.GetText(eLanguageSudo, "reloadConfirm")));
+        await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "settings"),
+            ParseMode.Html,
+            replyParameters: messageId,
+            replyMarkup: ReplyKeyboard.Settings(settings,
+                Utils.GetText(eLanguageSudo, "useProxy"),
+                Utils.GetText(eLanguageSudo, "useChangeBio"),
+                Utils.GetText(eLanguageSudo, "useCheckReport"),
+                Utils.GetText(eLanguageSudo, "useLogCLi")));
+    }
+
+    public async Task OnUpdate(Update update)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (update.CallbackQuery is null ||
+                    update.CallbackQuery.Message is null ||
+                    update.CallbackQuery.Message.Chat.Type != ChatType.Private)
+                {
+                    return;
+                }
+
+                long chatUserId = update.CallbackQuery.Message.Chat.Id;
+                int messageId = update.CallbackQuery.Message.MessageId;
+
+                string? callbackData = update.CallbackQuery.Data;
+
+                if (string.IsNullOrEmpty(callbackData))
+                {
+                    return;
+                }
+
+                switch (callbackData)
+                {
+                    case "IJoin":
+                    {
+                        await OnUpdateIJoin(chatUserId, messageId);
+                    }
+                        break;
+                    case "Reload":
+                    {
+                        await OnUpdateReload(chatUserId, messageId);
+                    }
+                        break;
+                    case "UseProxy":
+                    {
+                        await OnUpdateUseProxy(chatUserId, messageId);
+                    }
+                        break;
+                    default:
+                    {
+                        if (callbackData.Contains("ChangePermission_"))
+                        {
+                            await OnUpdateChangePermission(chatUserId, messageId, callbackData);
+                        }
+                    }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, nameof(Exception));
+            }
+        });
+
+        await Task.CompletedTask;
+    }
+
+    private async Task OnUpdateUseProxy(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (!anySudo)
+        {
+            return;
+        }
+        
+        _logger.Information($"- Sudo {chatUserId} Click Update Use Proxy Bot");
+
+        Message msgRemoveButtotn = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+        
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        Settings settings = await settingsRepository.GetSingleFirst();
+
+        if (!File.Exists(_appSettings.ProxyPath) || ProxyManager.HaveData(_appSettings.ProxyPath) is false)
+        {
+            _logger.Information($"- Sudo {chatUserId} Data or file Proxy Not Exists");
+            
+            await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
+                Utils.GetText(eLanguageSudo, "notExistData"), parseMode: ParseMode.Html,
+                replyMarkup: ReplyKeyboard.Settings(settings,
+                    Utils.GetText(eLanguageSudo, "useProxy"),
+                    Utils.GetText(eLanguageSudo, "useChangeBio"),
+                    Utils.GetText(eLanguageSudo, "useCheckReport"),
+                    Utils.GetText(eLanguageSudo, "useLogCLi")));
+
+            return;
+        }
+
+        if (settings.UseProxy)
+        {
+            ProxyManager.CleanCashe();
+            settings.UseProxy = false;
+            
+            _logger.Information($"- Sudo {chatUserId} Update Use Proxy True To False Bot");
+        }
+        else
+        {
+            ProxyManager.SetProxy(_appSettings.ProxyPath);
+            settings.UseProxy = true;
+            
+            _logger.Information($"- Sudo {chatUserId} Update Use Proxy False To True Bot");
+        }
+
+        await settingsRepository.Update(settings);
+        
+        await _telegramBotClient.EditMessageText(chatUserId,msgRemoveButtotn.MessageId, Utils.GetText(eLanguageSudo, "settings"),
+            ParseMode.Html,
+            replyMarkup: ReplyKeyboard.Settings(settings,
+                Utils.GetText(eLanguageSudo, "useProxy"),
+                Utils.GetText(eLanguageSudo, "useChangeBio"),
+                Utils.GetText(eLanguageSudo, "useCheckReport"),
+                Utils.GetText(eLanguageSudo, "useLogCLi")));
     }
 
     private async Task OnStep(long chatUserId, int messageId, string messageText)
@@ -194,6 +327,28 @@ public class TelegramBotApi : ITelegramBotApi
 
             return;
         }
+    }
+
+    private async Task OnReload(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (!anySudo)
+        {
+            return;
+        }
+
+        _logger.Information($"- Sudo {chatUserId} /reload Bot");
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "reloadAlert"),
+            ParseMode.Html,
+            replyParameters: messageId,
+            replyMarkup: ReplyKeyboard.Reload(Utils.GetText(eLanguageSudo, "reloadConfirm")));
     }
 
     private async Task OnCancel(long chatUserId, int messageId)
@@ -325,19 +480,19 @@ public class TelegramBotApi : ITelegramBotApi
             switch (sudo.Language)
             {
                 case ELanguage.En:
-                    {
-                        await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
-                    }
+                {
+                    await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
+                }
                     break;
                 case ELanguage.Fa:
-                    {
-                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                    }
+                {
+                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                }
                     break;
                 default:
-                    {
-                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                    }
+                {
+                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                }
                     break;
             }
 
@@ -369,19 +524,19 @@ public class TelegramBotApi : ITelegramBotApi
         switch (user.Language)
         {
             case ELanguage.En:
-                {
-                    await userRepository.ChangeLanguage(user, ELanguage.Fa);
-                }
+            {
+                await userRepository.ChangeLanguage(user, ELanguage.Fa);
+            }
                 break;
             case ELanguage.Fa:
-                {
-                    await userRepository.ChangeLanguage(user, ELanguage.En);
-                }
+            {
+                await userRepository.ChangeLanguage(user, ELanguage.En);
+            }
                 break;
             default:
-                {
-                    await userRepository.ChangeLanguage(user, ELanguage.En);
-                }
+            {
+                await userRepository.ChangeLanguage(user, ELanguage.En);
+            }
                 break;
         }
 
@@ -497,60 +652,6 @@ public class TelegramBotApi : ITelegramBotApi
             new BotCommandScopeChat() { ChatId = chatUserId });
     }
 
-    public async Task OnUpdate(Update update)
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                if (update.CallbackQuery is null ||
-                    update.CallbackQuery.Message is null ||
-                    update.CallbackQuery.Message.Chat.Type != ChatType.Private)
-                {
-                    return;
-                }
-
-                long chatUserId = update.CallbackQuery.Message.Chat.Id;
-                int messageId = update.CallbackQuery.Message.MessageId;
-
-                string? callbackData = update.CallbackQuery.Data;
-
-                if (string.IsNullOrEmpty(callbackData))
-                {
-                    return;
-                }
-
-                switch (callbackData)
-                {
-                    case "IJoin":
-                        {
-                            await OnUpdateIJoin(chatUserId, messageId);
-                        }
-                        break;
-                    case "Reload":
-                        {
-                            await OnUpdateReload(chatUserId, messageId);
-                        }
-                        break;
-                    default:
-                        {
-                            if (callbackData.Contains("ChangePermission_"))
-                            {
-                                await OnUpdateChangePermission(chatUserId, messageId, callbackData);
-                            }
-                        }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, nameof(Exception));
-            }
-        });
-
-        await Task.CompletedTask;
-    }
-
     private async Task OnUpdateReload(long chatUserId, int messageId)
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
@@ -559,7 +660,8 @@ public class TelegramBotApi : ITelegramBotApi
 
         _logger.Information($"- Sudo {chatUserId} Confirm Reload Bot");
 
-        Message removeButton = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+        Message removeButton =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
 
         //Note Delete all step user & cashe remove all 
 
@@ -569,19 +671,21 @@ public class TelegramBotApi : ITelegramBotApi
 
         string mutexName = Path.GetFileNameWithoutExtension(fileName);
 
-        using Mutex _mutexReload = new(true, mutexName, out bool createdNew);
+        using Mutex mutexReload = new(true, mutexName, out bool createdNew);
 
         ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
         if (!createdNew)
         {
-            await _telegramBotClient.EditMessageText(chatUserId, removeButton.MessageId, Utils.GetText(eLanguageSudo, "reloadMultipale"), replyMarkup: null);
+            await _telegramBotClient.EditMessageText(chatUserId, removeButton.MessageId,
+                Utils.GetText(eLanguageSudo, "reloadMultipale"), replyMarkup: null);
             return;
         }
 
         _logger.Information($"- Sudo {chatUserId} Reload Bot Sucsessfully");
 
-        await _telegramBotClient.EditMessageText(chatUserId, removeButton.MessageId, Utils.GetText(eLanguageSudo, "reloadSucsess"), replyMarkup: null);
+        await _telegramBotClient.EditMessageText(chatUserId, removeButton.MessageId,
+            Utils.GetText(eLanguageSudo, "reloadSucsess"), replyMarkup: null);
 
         try
         {
@@ -594,7 +698,7 @@ public class TelegramBotApi : ITelegramBotApi
         }
         finally
         {
-            _mutexReload.ReleaseMutex();
+            mutexReload.ReleaseMutex();
         }
     }
 
@@ -638,7 +742,6 @@ public class TelegramBotApi : ITelegramBotApi
             parseMode: ParseMode.Html,
             replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
                 Utils.GetText(eLanguageSudo, "changePeremission")));
-
     }
 
     private async Task OnUpdateIJoin(long chatUserId, int messageId)
@@ -646,7 +749,8 @@ public class TelegramBotApi : ITelegramBotApi
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-        Message msgEditReply = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+        Message msgEditReply =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
 
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
@@ -667,14 +771,16 @@ public class TelegramBotApi : ITelegramBotApi
         if (!isPermissionToUse)
         {
             _logger.Information($"- User {chatUserId} access denied use a bot");
-            await _telegramBotClient.EditMessageText(chatUserId, msgEditReply.MessageId, Utils.GetText(eLanguageUser, "acsessDenidUseBot"),
+            await _telegramBotClient.EditMessageText(chatUserId, msgEditReply.MessageId,
+                Utils.GetText(eLanguageUser, "acsessDenidUseBot"),
                 ParseMode.Html,
                 replyMarkup: ReplyKeyboard.Developer(Utils.GetText(eLanguageUser, "developer"),
                     _appSettings.Developer));
             return;
         }
 
-        await _telegramBotClient.EditMessageText(chatUserId, msgEditReply.MessageId, Utils.GetText(eLanguageUser, "start"), ParseMode.Html);
+        await _telegramBotClient.EditMessageText(chatUserId, msgEditReply.MessageId,
+            Utils.GetText(eLanguageUser, "start"), ParseMode.Html);
 
         if (_appSettings.CommandsUser.Count == default)
         {

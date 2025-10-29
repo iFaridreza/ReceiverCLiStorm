@@ -2,7 +2,7 @@
 using TL;
 using WTelegram;
 
-namespace RecevicerCliStorm.TelegramBot.WTelegramClientUtils;
+namespace ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
 
 public class WTelegramClientManager : IWTelegramClientManager
 {

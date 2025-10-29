@@ -3,18 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using ReceiverCliStorm.TelegramBot.Bot;
-using RecevicerCliStorm.TelegramBot.Bot;
-using RecevicerCliStorm.TelegramBot.Common.Dto;
-using RecevicerCliStorm.TelegramBot.Common.Trigger;
-using RecevicerCliStorm.TelegramBot.Core.IRepository;
-using RecevicerCliStorm.TelegramBot.Infrastructer;
-using RecevicerCliStorm.TelegramBot.Infrastructer.Repository;
-using RecevicerCliStorm.TelegramBot.WTelegramClientUtils;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
+using ReceiverCliStorm.TelegramBot.Common.Trigger;
+using ReceiverCliStorm.TelegramBot.Core.IRepository;
+using ReceiverCliStorm.TelegramBot.Infrastructer;
+using ReceiverCliStorm.TelegramBot.Infrastructer.Repository;
+using ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
 using Serilog;
 using Serilog.Sinks.TelegramBot;
 using Telegram.Bot;
 
-namespace RecevicerCliStorm.TelegramBot.Common.Manager;
+namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
 public static class ServicesManager
 {

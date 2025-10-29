@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RecevicerCliStorm.TelegramBot.Core.Domain;
-using RecevicerCliStorm.TelegramBot.Core.IRepository;
+using ReceiverCliStorm.TelegramBot.Core.Domain;
+using ReceiverCliStorm.TelegramBot.Core.IRepository;
 
-namespace RecevicerCliStorm.TelegramBot.Infrastructer.Repository;
+namespace ReceiverCliStorm.TelegramBot.Infrastructer.Repository;
 
 public class SettingsRepository : ISettingsRepository
 {

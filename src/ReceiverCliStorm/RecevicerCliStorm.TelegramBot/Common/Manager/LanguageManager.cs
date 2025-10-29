@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace RecevicerCliStorm.TelegramBot.Common.Manager;
+namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
 public static class LanguageManager
 {

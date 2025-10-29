@@ -1,6 +1,6 @@
-﻿using RecevicerCliStorm.TelegramBot.Core.Domain;
+﻿using ReceiverCliStorm.TelegramBot.Core.Domain;
 
-namespace RecevicerCliStorm.TelegramBot.Core.IRepository;
+namespace ReceiverCliStorm.TelegramBot.Core.IRepository;
 
 public interface ISettingsRepository
 {

@@ -1,10 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using RecevicerCliStorm.TelegramBot.Common;
-using RecevicerCliStorm.TelegramBot.Common.Dto;
+using ReceiverCliStorm.TelegramBot.Common;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
 
-namespace RecevicerCliStorm.TelegramBot.Infrastructer;
+namespace ReceiverCliStorm.TelegramBot.Infrastructer;
 
 public class ContextFactory : IDesignTimeDbContextFactory<Context>
 {

@@ -1,16 +1,16 @@
-﻿using RecevicerCliStorm.TelegramBot.Common.Dto;
-using Starksoft.Net.Proxy;
+﻿using Starksoft.Net.Proxy;
 using System.Text.Json;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
 
-namespace RecevicerCliStorm.TelegramBot.Common.Manager;
+namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
 public class ProxyManager
 {
-    static IEnumerable<Proxy> Proxies { get; set; }
+    private static IEnumerable<Proxy> _proxies { get; set; }
 
     static ProxyManager()
     {
-        Proxies = new List<Proxy>();
+        _proxies = new List<Proxy>();
     }
 
     public static bool HaveData(string proxyPath)
@@ -26,17 +26,22 @@ public class ProxyManager
 
         IEnumerable<Proxy>? proxys = JsonSerializer.Deserialize<IEnumerable<Proxy>>(data);
 
-        Proxies = proxys ?? throw new NullReferenceException(nameof(proxyPath));
+        _proxies = proxys ?? throw new NullReferenceException(nameof(proxyPath));
     }
 
+    public static void CleanCashe()
+    {
+      _proxies = [];
+    }
+    
     public static Proxy RandomProxy()
     {
-        if (Proxies is null || !Proxies.Any())
+        if (_proxies is null || !_proxies.Any())
         {
-            throw new NullReferenceException(nameof(Proxies));
+            throw new NullReferenceException(nameof(_proxies));
         }
 
-        return Proxies.ElementAt(new Random().Next(0, Proxies.Count()));
+        return _proxies.ElementAt(new Random().Next(0, _proxies.Count()));
     }
 
     public static bool IsConnectSocks5Proxy(string proxyHost, int proxyPort, string? username = null, string? password = null)

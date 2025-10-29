@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace RecevicerCliStorm.TelegramBot.Migrations
+namespace ReceiverCliStorm.TelegramBot.Migrations
 {
     /// <inheritdoc />
     public partial class Init : Migration

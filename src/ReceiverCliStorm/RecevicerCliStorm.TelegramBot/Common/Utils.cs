@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using PhoneNumbers;
-using RecevicerCliStorm.TelegramBot.Common.Dto;
-using RecevicerCliStorm.TelegramBot.Common.Manager;
-using RecevicerCliStorm.TelegramBot.Core.Domain;
 using System.Runtime.CompilerServices;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
+using ReceiverCliStorm.TelegramBot.Common.Manager;
+using ReceiverCliStorm.TelegramBot.Core.Domain;
 
-namespace RecevicerCliStorm.TelegramBot.Common;
+namespace ReceiverCliStorm.TelegramBot.Common;
 
 public static class Utils
 {   

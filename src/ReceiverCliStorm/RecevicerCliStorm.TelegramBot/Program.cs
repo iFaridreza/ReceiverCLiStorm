@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
-using RecevicerCliStorm.TelegramBot.Bot;
-using RecevicerCliStorm.TelegramBot.Common;
-using RecevicerCliStorm.TelegramBot.Common.Dto;
-using RecevicerCliStorm.TelegramBot.Common.Manager;
-using RecevicerCliStorm.TelegramBot.Core.IRepository;
-using RecevicerCliStorm.TelegramBot.Infrastructer;
+using ReceiverCliStorm.TelegramBot.Bot;
+using ReceiverCliStorm.TelegramBot.Common;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
+using ReceiverCliStorm.TelegramBot.Common.Manager;
+using ReceiverCliStorm.TelegramBot.Core.IRepository;
+using ReceiverCliStorm.TelegramBot.Infrastructer;
 
 AppSettings appSettings = Utils.BindConfiguration();
 

@@ -1,6 +1,7 @@
-﻿using Telegram.Bot.Types.ReplyMarkups;
+﻿using ReceiverCliStorm.TelegramBot.Core.Domain;
+using Telegram.Bot.Types.ReplyMarkups;
 
-namespace RecevicerCliStorm.TelegramBot.Common;
+namespace ReceiverCliStorm.TelegramBot.Common;
 
 public static class ReplyKeyboard
 {
@@ -45,11 +46,79 @@ public static class ReplyKeyboard
         return replyKeyboardMarkup;
     }
 
-
-    public static InlineKeyboardMarkup StatusPermisionUser(long chatUserId,string textButtonPermisionUser)
+    public static InlineKeyboardMarkup Settings(Settings settings, string textButtonUseProxy, string textButtonUseChangeBio, string textButtonUseCheckReport, string textButtonUseLogCli)
     {
         InlineKeyboardMarkup inlineKeyboardMarkup = new();
-        
+
+        inlineKeyboardMarkup.AddButtons([
+
+            new()
+            {
+                Text = textButtonUseProxy,
+                CallbackData = "Alert"
+            },
+
+            new()
+            {
+                Text = settings.UseProxy ? "✅" : "❌",
+                CallbackData = "UseProxy"
+            }
+
+        ]).AddNewRow();
+
+        inlineKeyboardMarkup.AddButtons([
+
+            new()
+            {
+                Text = textButtonUseChangeBio,
+                CallbackData = "Alert"
+            },
+
+            new()
+            {
+                Text = settings.UseChangeBio ? "✅" : "❌",
+                CallbackData = "UseChangeBio"
+            }
+        ]).AddNewRow();
+
+        inlineKeyboardMarkup.AddButtons([
+
+          new()
+            {
+                Text = textButtonUseCheckReport,
+                CallbackData = "Alert"
+            },
+
+            new()
+            {
+                Text = settings.UseCheckReport ? "✅" : "❌",
+                CallbackData = "UseCheckReport"
+            }
+         ]).AddNewRow();
+
+        inlineKeyboardMarkup.AddButtons([
+
+         new()
+            {
+                Text = textButtonUseLogCli,
+                CallbackData = "Alert"
+            },
+
+            new()
+            {
+                Text = settings.UseLogCLI ? "✅" : "❌",
+                CallbackData = "UseLogCLi"
+            }
+        ]);
+
+        return inlineKeyboardMarkup;
+
+    }
+
+    public static InlineKeyboardMarkup StatusPermisionUser(long chatUserId, string textButtonPermisionUser)
+    {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new();
+
         inlineKeyboardMarkup.AddButton(new()
         {
             Text = textButtonPermisionUser,
@@ -58,7 +127,7 @@ public static class ReplyKeyboard
 
         return inlineKeyboardMarkup;
     }
-    
+
     public static InlineKeyboardMarkup Developer(string textButtonDeveloper, string developerUsername)
     {
         InlineKeyboardMarkup replyKeyboardMarkup = new();
