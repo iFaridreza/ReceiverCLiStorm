@@ -176,6 +176,21 @@ public class TelegramBotApi : ITelegramBotApi
                         await OnUpdateUseProxy(chatUserId, messageId);
                     }
                         break;
+                    case $"UseChangeBio":
+                    {
+                        await OnUpdateUseChangeBio(chatUserId, messageId);
+                    }
+                        break;
+                    case "UseLogCLi":
+                    {
+                        await OnUpdateUseLogCLi(chatUserId, messageId);
+                    }
+                        break;
+                    case "UseCheckReport":
+                    {
+                        await OnUpdateUseCheckReport(chatUserId, messageId);
+                    }
+                        break;
                     default:
                     {
                         if (callbackData.Contains("ChangePermission_"))
@@ -195,6 +210,141 @@ public class TelegramBotApi : ITelegramBotApi
         await Task.CompletedTask;
     }
 
+    private async Task OnUpdateUseCheckReport(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (!anySudo)
+        {
+            return;
+        }
+
+        _logger.Information($"- Sudo {chatUserId} Click Update Use Check Report Bot");
+
+        Message msgRemoveButtotn =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        Settings settings = await settingsRepository.GetSingleFirst();
+
+        if (settings.UseCheckReport)
+        {
+            settings.UseCheckReport = false;
+            _logger.Information($"- Sudo {chatUserId} Update Use Check ReportTrue To False Bot");
+        }
+        else
+        {
+            settings.UseCheckReport = true;
+            _logger.Information($"- Sudo {chatUserId} Update Use Check Report True To False Bot");
+        }
+
+        await settingsRepository.Update(settings);
+
+        await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
+            Utils.GetText(eLanguageSudo, "settings"),
+            ParseMode.Html,
+            replyMarkup: ReplyKeyboard.Settings(settings,
+                Utils.GetText(eLanguageSudo, "useProxy"),
+                Utils.GetText(eLanguageSudo, "useChangeBio"),
+                Utils.GetText(eLanguageSudo, "useCheckReport"),
+                Utils.GetText(eLanguageSudo, "useLogCLi")));
+    }
+
+    private async Task OnUpdateUseLogCLi(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (!anySudo)
+        {
+            return;
+        }
+
+        _logger.Information($"- Sudo {chatUserId} Click Update UseLog CLi Bot");
+
+        Message msgRemoveButtotn =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        Settings settings = await settingsRepository.GetSingleFirst();
+
+        if (settings.UseLogCLI)
+        {
+            settings.UseLogCLI = false;
+            _logger.Information($"- Sudo {chatUserId} Update UseLog CLi True To False Bot");
+        }
+        else
+        {
+            settings.UseLogCLI = true;
+            _logger.Information($"- Sudo {chatUserId} Update UseLog CLi True To False Bot");
+        }
+
+        await settingsRepository.Update(settings);
+
+        await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
+            Utils.GetText(eLanguageSudo, "settings"),
+            ParseMode.Html,
+            replyMarkup: ReplyKeyboard.Settings(settings,
+                Utils.GetText(eLanguageSudo, "useProxy"),
+                Utils.GetText(eLanguageSudo, "useChangeBio"),
+                Utils.GetText(eLanguageSudo, "useCheckReport"),
+                Utils.GetText(eLanguageSudo, "useLogCLi")));
+    }
+
+    private async Task OnUpdateUseChangeBio(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (!anySudo)
+        {
+            return;
+        }
+
+        _logger.Information($"- Sudo {chatUserId} Click Update Change Bio Bot");
+
+        Message msgRemoveButtotn =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        Settings settings = await settingsRepository.GetSingleFirst();
+
+        if (settings.UseChangeBio)
+        {
+            settings.UseChangeBio = false;
+            _logger.Information($"- Sudo {chatUserId} Update Change Bio True To False Bot");
+        }
+        else
+        {
+            settings.UseChangeBio = true;
+            _logger.Information($"- Sudo {chatUserId} Update Change Bio True To False Bot");
+        }
+
+        await settingsRepository.Update(settings);
+
+        await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
+            Utils.GetText(eLanguageSudo, "settings"),
+            ParseMode.Html,
+            replyMarkup: ReplyKeyboard.Settings(settings,
+                Utils.GetText(eLanguageSudo, "useProxy"),
+                Utils.GetText(eLanguageSudo, "useChangeBio"),
+                Utils.GetText(eLanguageSudo, "useCheckReport"),
+                Utils.GetText(eLanguageSudo, "useLogCLi")));
+    }
+
     private async Task OnUpdateUseProxy(long chatUserId, int messageId)
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
@@ -207,11 +357,12 @@ public class TelegramBotApi : ITelegramBotApi
         {
             return;
         }
-        
+
         _logger.Information($"- Sudo {chatUserId} Click Update Use Proxy Bot");
 
-        Message msgRemoveButtotn = await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
-        
+        Message msgRemoveButtotn =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+
         ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
         Settings settings = await settingsRepository.GetSingleFirst();
@@ -219,7 +370,7 @@ public class TelegramBotApi : ITelegramBotApi
         if (!File.Exists(_appSettings.ProxyPath) || ProxyManager.HaveData(_appSettings.ProxyPath) is false)
         {
             _logger.Information($"- Sudo {chatUserId} Data or file Proxy Not Exists");
-            
+
             await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
                 Utils.GetText(eLanguageSudo, "notExistData"), parseMode: ParseMode.Html,
                 replyMarkup: ReplyKeyboard.Settings(settings,
@@ -235,20 +386,21 @@ public class TelegramBotApi : ITelegramBotApi
         {
             ProxyManager.CleanCashe();
             settings.UseProxy = false;
-            
+
             _logger.Information($"- Sudo {chatUserId} Update Use Proxy True To False Bot");
         }
         else
         {
             ProxyManager.SetProxy(_appSettings.ProxyPath);
             settings.UseProxy = true;
-            
+
             _logger.Information($"- Sudo {chatUserId} Update Use Proxy False To True Bot");
         }
 
         await settingsRepository.Update(settings);
-        
-        await _telegramBotClient.EditMessageText(chatUserId,msgRemoveButtotn.MessageId, Utils.GetText(eLanguageSudo, "settings"),
+
+        await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
+            Utils.GetText(eLanguageSudo, "settings"),
             ParseMode.Html,
             replyMarkup: ReplyKeyboard.Settings(settings,
                 Utils.GetText(eLanguageSudo, "useProxy"),
