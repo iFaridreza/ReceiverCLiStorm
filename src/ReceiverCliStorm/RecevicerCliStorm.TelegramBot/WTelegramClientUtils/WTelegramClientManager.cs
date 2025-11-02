@@ -11,6 +11,7 @@ public class WTelegramClientManager : IWTelegramClientManager
     private string _apiHash;
     private string _sessionPath;
 
+
     public WTelegramClientManager(string apiId, string apiHash, string sessionPath, Action<int, string>? logging)
     {
         _apiId = apiId;
@@ -39,7 +40,7 @@ public class WTelegramClientManager : IWTelegramClientManager
         {
             return;
         }
-
+        
         await _client.ConnectAsync();
     }
 

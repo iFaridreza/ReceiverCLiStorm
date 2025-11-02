@@ -4,6 +4,7 @@ using ReceiverCliStorm.TelegramBot.Common.Dto;
 using ReceiverCliStorm.TelegramBot.Common.Manager;
 using ReceiverCliStorm.TelegramBot.Core.Domain;
 using ReceiverCliStorm.TelegramBot.Core.IRepository;
+using ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
 using Serilog;
 using System.Diagnostics;
 using Telegram.Bot;
@@ -62,39 +63,365 @@ public class TelegramBotApi : ITelegramBotApi
                 switch (messageText)
                 {
                     case "/start":
-                    {
-                        await OnStart(chatUserId, messageId);
-                    }
+                        {
+                            await OnStart(chatUserId, messageId);
+                        }
                         break;
                     case "/language":
-                    {
-                        await OnLanguage(chatUserId, messageId);
-                    }
+                        {
+                            await OnLanguage(chatUserId, messageId);
+                        }
                         break;
                     case "/infouser":
-                    {
-                        await OnInfoUser(chatUserId, messageId);
-                    }
+                        {
+                            await OnInfoUser(chatUserId, messageId);
+                        }
                         break;
                     case "/cancel":
-                    {
-                        await OnCancel(chatUserId, messageId);
-                    }
+                        {
+                            await OnCancel(chatUserId, messageId);
+                        }
                         break;
                     case "/reload":
-                    {
-                        await OnReload(chatUserId, messageId);
-                    }
+                        {
+                            await OnReload(chatUserId, messageId);
+                        }
                         break;
                     case "/settings":
-                    {
-                        await OnSettings(chatUserId, messageId);
-                    }
+                        {
+                            await OnSettings(chatUserId, messageId);
+                        }
+                        break;
+                    case "/help":
+                        {
+                            await OnHelp(chatUserId, messageId);
+                        }
                         break;
                     default:
+                        {
+                            await OnStep(chatUserId, messageId, messageText);
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, nameof(Exception));
+            }
+        });
+
+        await Task.CompletedTask;
+    }
+
+    private async Task OnUpdatePhone(long chatUserId, int messageId, string messageText)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+        ISessionInfoRepository sessionInfoRepository = scope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
+        ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
+        IWTelegramClientManagerFactory wTelegramClientManagerFactory = scope.ServiceProvider.GetRequiredService<IWTelegramClientManagerFactory>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (anySudo)
+        {
+            return;
+        }
+
+        bool anyUser = await userRepository.Any(chatUserId);
+
+        if (!anyUser)
+        {
+            await userRepository.Create(new()
+            {
+                ChatId = chatUserId,
+                Language = ELanguage.En
+            });
+
+            _logger.Information($"- User {chatUserId} signup to bot");
+        }
+
+        ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+        Dictionary<string, string> usernameJoinForces = await IsJoinForce(chatUserId);
+
+        if (usernameJoinForces.Count > default(int))
+        {
+            _logger.Information($"- User {chatUserId} show list to force join bot");
+            await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "joinRequest"),
+                ParseMode.Html, replyParameters: messageId,
+                replyMarkup: ReplyKeyboard.JoinForce(usernameJoinForces, Utils.GetText(eLanguageUser, "joined")));
+            return;
+        }
+
+        bool isPermissionToUse = await IsPermissionToUse(chatUserId);
+
+        if (!isPermissionToUse)
+        {
+            _logger.Information($"- User {chatUserId} access denied use a bot");
+            await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "acsessDenidUseBot"),
+                ParseMode.Html, replyParameters: messageId,
+                replyMarkup: ReplyKeyboard.Developer(Utils.GetText(eLanguageUser, "developer"),
+                    _appSettings.Developer));
+            return;
+        }
+
+        _logger.Information($"- User {chatUserId} Send {messageText} Bot");
+
+        string phoneNumber = messageText.Replace(" ", string.Empty);
+
+        bool isValidPhone = Utils.IsPhoneNumber(phoneNumber);
+
+        if (!isValidPhone)
+        {
+            _logger.Information($"- User {chatUserId} Invalid Phone {messageText} Bot");
+
+            await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "invalidPhone"), ParseMode.Html,
+            replyParameters: messageId);
+
+            return;
+        }
+
+        string sessionPath = Path.Combine(AppContext.BaseDirectory, _appSettings.SessionsPath, string.Concat(phoneNumber, ".session"));
+
+        InfoPhoneNumber infoPhoneNumber = Utils.InfoPhoneNumber(phoneNumber);
+
+        bool anyExistsSessionDb = await sessionRepository.Any(infoPhoneNumber.CountryCode, infoPhoneNumber.PhoneNumber);
+        bool anyExistsSessionFile = Utils.AnySessions(sessionPath);
+
+        if (anyExistsSessionDb || anyExistsSessionDb)
+        {
+            _logger.Information($"- User {chatUserId} Exists Phone {phoneNumber} Bot");
+
+            await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "existsPhone"), ParseMode.Html,
+            replyParameters: messageId);
+
+            return;
+        }
+
+
+        Message msgWiteProsessing = await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
+            replyParameters: messageId);
+
+        Settings settings = await settingsRepository.GetSingleFirst();
+        SessionInfo sessionInfo = await sessionInfoRepository.GetSingleFirst();
+
+        Action<int, string> loging = (_, _) => { };
+
+        if (settings.UseLogCLI)
+        {
+            loging = (_, msg) =>
+            {
+                _logger.Information($"- Log Session : {phoneNumber}\n\n{msg}");
+            };
+        }
+
+        IWTelegramClientManager wTelegramClientManager = wTelegramClientManagerFactory
+            .Create(
+                sessionInfo.ApiId,
+                sessionInfo.ApiHash,
+                sessionPath,
+                loging
+                );
+        try
+        {
+            await wTelegramClientManager.Connect();
+
+            if (settings.UseProxy)
+            {
+                bool isConnected = false;
+
+                int countProxy = ProxyManager.GetCount();
+
+                for (int i = 0; i < countProxy; i++)
+                {
+                    Proxy proxy = ProxyManager.RandomProxy();
+
+                    int port = int.Parse(proxy.Port);
+
+                    isConnected = ProxyManager.IsConnectSocks5Proxy(proxy.Ip, port, proxy.Username, proxy.Password);
+
+                    if (isConnected)
                     {
-                        await OnStep(chatUserId, messageId, messageText);
+                        _logger.Information($"- Log Session: \n{phoneNumber}\n\nUse Proxy: {proxy.Ip}:{proxy.Port}");
+
+                        wTelegramClientManager.UseScokcs5Proxy(proxy.Ip, port, proxy.Username, proxy.Password);
+
+                        break;
                     }
+                }
+
+                if (!isConnected)
+                {
+                    _logger.Warning($"- Log Session : \n{phoneNumber}\n\nCant Connected Proxy");
+                }
+            }
+
+            string state = await wTelegramClientManager.Login(phoneNumber);
+
+            if (string.IsNullOrEmpty(state) || state != "verification_code")
+            {
+                _logger.Information($"- User {chatUserId} Login Session {phoneNumber} State: {state} Bot");
+
+                await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId, Utils.GetText(eLanguageUser, "tryAgain"));
+
+                return;
+            }
+
+            _logger.Information($"- User {chatUserId} Login Session {phoneNumber} State: {state} Bot");
+
+            bool anyStep = await userStepRepository.Any(chatUserId);
+
+            if (anyStep)
+            {
+                await userStepRepository.Remove(chatUserId);
+            }
+
+            await userStepRepository.Create(new()
+            {
+                ChatId = chatUserId,
+                Step = "LoginCode",
+                ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
+            });
+
+            SessionCasheManager.AddOrUpdate(chatUserId, wTelegramClientManager);
+
+            await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId, string.Format(Utils.GetText(eLanguageUser, "loginCode"), phoneNumber));
+        }
+        catch (Exception ex) when (ex.Message == "PHONE_NUMBER_INVALID")
+        {
+            _logger.Information($"- User {chatUserId} Login Session {phoneNumber} Invalid Bot");
+            await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId, string.Format(Utils.GetText(eLanguageUser, "phoneInvalid"), phoneNumber));
+            await wTelegramClientManager.Disconnect();
+            File.Delete(sessionPath);
+        }
+        catch (Exception ex) when (ex.Message == "PHONE_NUMBER_FLOOD")
+        {
+            _logger.Information($"- User {chatUserId} Login Session {phoneNumber} Flood Bot");
+            await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId, string.Format(Utils.GetText(eLanguageUser, "phoneFlood"), phoneNumber));
+            await wTelegramClientManager.Disconnect();
+            File.Delete(sessionPath);
+        }
+        catch (Exception ex) when (ex.Message == "PHONE_NUMBER_BANNED")
+        {
+            _logger.Information($"- User {chatUserId} Login Session {phoneNumber} Ban Bot");
+            await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId, string.Format(Utils.GetText(eLanguageUser, "phoneBan"), phoneNumber));
+            await wTelegramClientManager.Disconnect();
+            File.Delete(sessionPath);
+        }
+        catch (Exception ex) when (
+            ex.Message.Contains("BadMsgNotification") ||
+            ex.Message.Contains("Connection shut down") ||
+            ex.Message.Contains("TimedOut") ||
+            ex.Message.Contains("A connection attempt failed"))
+        {
+            _logger.Warning(ex,$"- User {chatUserId} Login Session {phoneNumber} Bot");
+            await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId, Utils.GetText(eLanguageUser, "tryAgain"));
+            await wTelegramClientManager.Disconnect();
+            File.Delete(sessionPath);
+        }
+    }
+
+    private async Task OnHelp(long chatUserId, int messageId)
+    {
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+
+        bool anySudo = await sudoRepository.Any(chatUserId);
+
+        if (anySudo)
+        {
+            return;
+        }
+
+        bool anyUser = await userRepository.Any(chatUserId);
+
+        if (!anyUser)
+        {
+            await userRepository.Create(new()
+            {
+                ChatId = chatUserId,
+                Language = ELanguage.En
+            });
+
+            _logger.Information($"- User {chatUserId} signup to bot");
+        }
+
+        _logger.Information($"- User {chatUserId} /help bot");
+
+        ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+
+        await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "help"), ParseMode.Html,
+           replyParameters: messageId);
+    }
+
+    public async Task OnUpdate(Update update)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (update.CallbackQuery is null ||
+                    update.CallbackQuery.Message is null ||
+                    update.CallbackQuery.Message.Chat.Type != ChatType.Private)
+                {
+                    return;
+                }
+
+                long chatUserId = update.CallbackQuery.Message.Chat.Id;
+                int messageId = update.CallbackQuery.Message.MessageId;
+
+                string? callbackData = update.CallbackQuery.Data;
+
+                if (string.IsNullOrEmpty(callbackData))
+                {
+                    return;
+                }
+
+                switch (callbackData)
+                {
+                    case "IJoin":
+                        {
+                            await OnUpdateIJoin(chatUserId, messageId);
+                        }
+                        break;
+                    case "Reload":
+                        {
+                            await OnUpdateReload(chatUserId, messageId);
+                        }
+                        break;
+                    case "UseProxy":
+                        {
+                            await OnUpdateUseProxy(chatUserId, messageId);
+                        }
+                        break;
+                    case $"UseChangeBio":
+                        {
+                            await OnUpdateUseChangeBio(chatUserId, messageId);
+                        }
+                        break;
+                    case "UseLogCLi":
+                        {
+                            await OnUpdateUseLogCLi(chatUserId, messageId);
+                        }
+                        break;
+                    case "UseCheckReport":
+                        {
+                            await OnUpdateUseCheckReport(chatUserId, messageId);
+                        }
+                        break;
+                    default:
+                        {
+                            if (callbackData.Contains("ChangePermission_"))
+                            {
+                                await OnUpdateChangePermission(chatUserId, messageId, callbackData);
+                            }
+                        }
                         break;
                 }
             }
@@ -134,80 +461,6 @@ public class TelegramBotApi : ITelegramBotApi
                 Utils.GetText(eLanguageSudo, "useChangeBio"),
                 Utils.GetText(eLanguageSudo, "useCheckReport"),
                 Utils.GetText(eLanguageSudo, "useLogCLi")));
-    }
-
-    public async Task OnUpdate(Update update)
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                if (update.CallbackQuery is null ||
-                    update.CallbackQuery.Message is null ||
-                    update.CallbackQuery.Message.Chat.Type != ChatType.Private)
-                {
-                    return;
-                }
-
-                long chatUserId = update.CallbackQuery.Message.Chat.Id;
-                int messageId = update.CallbackQuery.Message.MessageId;
-
-                string? callbackData = update.CallbackQuery.Data;
-
-                if (string.IsNullOrEmpty(callbackData))
-                {
-                    return;
-                }
-
-                switch (callbackData)
-                {
-                    case "IJoin":
-                    {
-                        await OnUpdateIJoin(chatUserId, messageId);
-                    }
-                        break;
-                    case "Reload":
-                    {
-                        await OnUpdateReload(chatUserId, messageId);
-                    }
-                        break;
-                    case "UseProxy":
-                    {
-                        await OnUpdateUseProxy(chatUserId, messageId);
-                    }
-                        break;
-                    case $"UseChangeBio":
-                    {
-                        await OnUpdateUseChangeBio(chatUserId, messageId);
-                    }
-                        break;
-                    case "UseLogCLi":
-                    {
-                        await OnUpdateUseLogCLi(chatUserId, messageId);
-                    }
-                        break;
-                    case "UseCheckReport":
-                    {
-                        await OnUpdateUseCheckReport(chatUserId, messageId);
-                    }
-                        break;
-                    default:
-                    {
-                        if (callbackData.Contains("ChangePermission_"))
-                        {
-                            await OnUpdateChangePermission(chatUserId, messageId, callbackData);
-                        }
-                    }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, nameof(Exception));
-            }
-        });
-
-        await Task.CompletedTask;
     }
 
     private async Task OnUpdateUseCheckReport(long chatUserId, int messageId)
@@ -421,6 +674,8 @@ public class TelegramBotApi : ITelegramBotApi
 
         if (!anyStep)
         {
+            await OnUpdatePhone(chatUserId, messageId, messageText);
+
             return;
         }
 
@@ -632,19 +887,19 @@ public class TelegramBotApi : ITelegramBotApi
             switch (sudo.Language)
             {
                 case ELanguage.En:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
+                    }
                     break;
                 case ELanguage.Fa:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                    }
                     break;
                 default:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                    }
                     break;
             }
 
@@ -676,19 +931,19 @@ public class TelegramBotApi : ITelegramBotApi
         switch (user.Language)
         {
             case ELanguage.En:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.Fa);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.Fa);
+                }
                 break;
             case ELanguage.Fa:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.En);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.En);
+                }
                 break;
             default:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.En);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.En);
+                }
                 break;
         }
 

@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using PhoneNumbers;
-using System.Runtime.CompilerServices;
 using ReceiverCliStorm.TelegramBot.Common.Dto;
 using ReceiverCliStorm.TelegramBot.Common.Manager;
 using ReceiverCliStorm.TelegramBot.Core.Domain;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace ReceiverCliStorm.TelegramBot.Common;
 
@@ -82,4 +83,14 @@ public static class Utils
             PhoneNumber = formattedNumber.Replace(regionCountry, string.Empty)
         };
     }
+
+    public static bool IsPhoneNumber(string phoneNumber)
+    {
+        const string pattern = @"^\+(\d{1,4})[-\s]?(\d{4,14})$";
+
+        bool isValid = Regex.IsMatch(phoneNumber, pattern);
+
+        return isValid;
+    }
+
 }

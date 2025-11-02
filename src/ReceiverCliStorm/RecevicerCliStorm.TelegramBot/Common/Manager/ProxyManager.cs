@@ -57,4 +57,6 @@ public class ProxyManager
             return false;
         }
     }
+
+    public static int GetCount() => _proxies.Count();
 }
