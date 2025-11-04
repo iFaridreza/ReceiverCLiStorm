@@ -55,13 +55,13 @@ public static class Utils
         return roundTime.AddMinutes(minute);
     }
 
-    public static DateTime GetDateTime()
+    public static DateOnly GetDateTime()
     {
         DateTime dateTimeNow = DateTime.Now;
 
         DateTime roundTime = new(dateTimeNow.Year, dateTimeNow.Month, dateTimeNow.Day, 0, 0, 0);
 
-        return roundTime;
+        return DateOnly.FromDateTime(roundTime);
     }
 
     public static InfoPhoneNumber InfoPhoneNumber(string phoneNumber)

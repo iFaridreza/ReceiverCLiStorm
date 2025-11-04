@@ -36,12 +36,7 @@ public class WTelegramClientManager : IWTelegramClientManager
 
     public async Task Connect()
     {
-        if (_client.Disconnected)
-        {
-            return;
-        }
-        
-        await _client.ConnectAsync();
+        await _client.ConnectAsync(quickResume:true);
     }
 
     public async Task Disconnect()
@@ -108,9 +103,9 @@ public class WTelegramClientManager : IWTelegramClientManager
         };
     }
 
-    public async Task UpdateInformashion(string firstName, string lastName, string? bio)
+    public async Task UpdateBio(string bio)
     {
-        await _client.Account_UpdateProfile(firstName, lastName, bio);
+        await _client.Account_UpdateProfile(about:bio);
     }
 
     public async Task UpdateProfilePhoto(string photoPath)

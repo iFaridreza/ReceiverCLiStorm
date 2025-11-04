@@ -1,34 +1,34 @@
-﻿using ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
+﻿using ReceiverCliStorm.TelegramBot.Common.Dto;
 using System.Collections.Concurrent;
 
 namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
 public static class SessionCasheManager
 {
-    private static ConcurrentDictionary<long, IWTelegramClientManager> keyValuePairs;
+    private static ConcurrentDictionary<long, SessionCashe> keyValuePairs;
 
     static SessionCasheManager() => keyValuePairs = new();
 
-    public static void AddOrUpdate(long chatId, IWTelegramClientManager clientManager)
+    public static void AddOrUpdate(long chatId, SessionCashe sessionCashe)
     {
         keyValuePairs.AddOrUpdate(chatId,
-            id => clientManager,
-            (id, existing) => clientManager
+            id => sessionCashe,
+            (id, existing) => sessionCashe
         );
     }
 
     public static bool Any(long chatId) => keyValuePairs.ContainsKey(chatId);
 
-    public static IWTelegramClientManager Get(long chatId)
+    public static SessionCashe Get(long chatId)
     {
-        keyValuePairs.TryGetValue(chatId, out IWTelegramClientManager? clientManager);
+        keyValuePairs.TryGetValue(chatId, out SessionCashe? sessionCashe);
 
-        if (clientManager is null)
+        if (sessionCashe is null)
         {
-            throw new KeyNotFoundException($"Session Not Found In Cash Key {chatId}");
+            throw new KeyNotFoundException($"Session Cashe Not Found In Cash Key {chatId}");
         }
 
-        return clientManager;
+        return sessionCashe;
     }
 
     public static void Remove(long chatId) => keyValuePairs.TryRemove(chatId, out _);

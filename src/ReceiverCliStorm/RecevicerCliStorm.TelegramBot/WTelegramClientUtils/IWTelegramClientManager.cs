@@ -10,7 +10,7 @@ public interface IWTelegramClientManager
     Task<string[]> GetMessagesText(string contactPhone, int limit);
     Task<bool> IsReport();
     Task ResetSessions();
-    Task UpdateInformashion(string firstName, string lastName, string? bio);
+    Task UpdateBio(string bio);
     Task UpdateProfilePhoto(string photoPath);
     Task ChangeStatus(bool online = true);
     void DisableUpdate(bool disable = true);
