@@ -140,4 +140,17 @@ public static class ReplyKeyboard
 
         return replyKeyboardMarkup;
     }
+    
+    public static InlineKeyboardMarkup DownloadCurrentSession(string textDownloadCurrentSession,string phoneNumber)
+    {
+        InlineKeyboardMarkup replyKeyboardMarkup = new();
+
+        replyKeyboardMarkup.AddButton(new()
+        {
+            Text = textDownloadCurrentSession,
+            CallbackData = $"Download_{phoneNumber}"
+        });
+        
+        return replyKeyboardMarkup;
+    }
 }
