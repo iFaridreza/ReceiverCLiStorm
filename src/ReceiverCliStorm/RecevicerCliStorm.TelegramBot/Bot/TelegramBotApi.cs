@@ -7,6 +7,7 @@ using ReceiverCliStorm.TelegramBot.Core.IRepository;
 using ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
 using Serilog;
 using System.Diagnostics;
+using System.IO.Compression;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -884,9 +885,26 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        StreamReader streamReader = new(sessionPath);
-        await _telegramBotClient.SendDocument(chatUserId,streamReader.BaseStream,
-            Utils.GetText(eLanguageUser, "descriptionUploadSession"),replyParameters:messageId);
+        await sessionRepository.UpdateStatus(session, ESessionStatus.Sold);
+
+        string fileName = $"{phoneNumber} {Path.GetRandomFileName()}.zip";
+
+        ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create);
+        zipArchive.CreateEntryFromFile(sessionPath, Path.GetFileName(sessionPath));
+        zipArchive.Dispose();
+
+        string zipPath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+        StreamReader streamReader = new(zipPath);
+
+        await _telegramBotClient.SendChatAction(chatUserId, ChatAction.UploadDocument);
+        
+        await _telegramBotClient.SendDocument(chatUserId, streamReader.BaseStream,
+            Utils.GetText(eLanguageUser, "descriptionUploadSession"), replyParameters: messageId);
+
+        streamReader.Close();
+
+        File.Delete(zipPath);
     }
 
     private async Task OnSettings(long chatUserId, int messageId)
