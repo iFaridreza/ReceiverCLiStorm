@@ -115,10 +115,16 @@ public static class ReplyKeyboard
 
     }
 
-    public static InlineKeyboardMarkup StatusPermisionUser(long chatUserId, string textButtonPermisionUser)
+    public static InlineKeyboardMarkup StatusPermisionUser(long chatUserId, string textButtonPermisionUser,string textButtonBackupUserSessions)
     {
         InlineKeyboardMarkup inlineKeyboardMarkup = new();
 
+        inlineKeyboardMarkup.AddButton(new()
+        {
+            Text = textButtonBackupUserSessions,
+            CallbackData = $"BackupSessions_{chatUserId}"
+        }).AddNewRow();
+        
         inlineKeyboardMarkup.AddButton(new()
         {
             Text = textButtonPermisionUser,

@@ -51,7 +51,12 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 return;
             }
-
+            
+            await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+            ISudoRepository  sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+            IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+            
             long chatUserId = message.From.Id;
             int messageId = message.MessageId;
 
@@ -108,6 +113,190 @@ public class TelegramBotApi : ITelegramBotApi
             catch (Exception ex)
             {
                 _logger.Error(ex, nameof(Exception));
+                
+                bool anyStep = await userStepRepository.Any(chatUserId);
+
+                if (anyStep)
+                {
+                    await userStepRepository.Remove(chatUserId);
+                }
+        
+                bool anyCashe = SessionCasheManager.Any(chatUserId);
+
+                if (anyCashe)
+                {
+                    SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+
+                    IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+
+                    await wTelegramClientManager.Disconnect();
+            
+                    SessionCasheManager.Remove(chatUserId);
+                }
+                
+                bool anySudo = await sudoRepository.Any(chatUserId);
+
+                if (anySudo)
+                {
+                    ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+                    await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "tryAgain"));
+                    
+                    return;
+                }
+                
+                bool anyUser = await userRepository.Any(chatUserId);
+                
+                if (!anyUser)
+                {
+                    await userRepository.Create(new()
+                    {
+                        ChatId = chatUserId,
+                        Language = ELanguage.En
+                    });
+
+                    _logger.Information($"- User {chatUserId} signup to bot");
+                }
+
+                ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+                
+                await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "tryAgain"));
+            }
+        });
+
+        await Task.CompletedTask;
+    }
+
+     public async Task OnUpdate(Update update)
+    {
+        _ = Task.Run(async () =>
+        {
+            if (update.CallbackQuery is null ||
+                update.CallbackQuery.Message is null ||
+                update.CallbackQuery.Message.Chat.Type != ChatType.Private)
+            {
+                return;
+            }
+
+            await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+            ISudoRepository  sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+            IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+                
+            long chatUserId = update.CallbackQuery.Message.Chat.Id;
+            int messageId = update.CallbackQuery.Message.MessageId;
+
+            
+            try
+            {
+                string? callbackData = update.CallbackQuery.Data;
+
+                if (string.IsNullOrEmpty(callbackData))
+                {
+                    return;
+                }
+
+                switch (callbackData)
+                {
+                    case "IJoin":
+                    {
+                        await OnUpdateIJoin(chatUserId, messageId);
+                    }
+                        break;
+                    case "Reload":
+                    {
+                        await OnUpdateReload(chatUserId, messageId);
+                    }
+                        break;
+                    case "UseProxy":
+                    {
+                        await OnUpdateUseProxy(chatUserId, messageId);
+                    }
+                        break;
+                    case $"UseChangeBio":
+                    {
+                        await OnUpdateUseChangeBio(chatUserId, messageId);
+                    }
+                        break;
+                    case "UseLogCLi":
+                    {
+                        await OnUpdateUseLogCLi(chatUserId, messageId);
+                    }
+                        break;
+                    case "UseCheckReport":
+                    {
+                        await OnUpdateUseCheckReport(chatUserId, messageId);
+                    }
+                        break;
+                    default:
+                    {
+                        if (callbackData.Contains("ChangePermission_"))
+                        {
+                            await OnUpdateChangePermission(chatUserId, messageId, callbackData);
+                        }
+                        else if (callbackData.Contains("BackupSessions_"))
+                        {
+                            await OnUpdateBackupSessions(chatUserId, messageId, callbackData);
+                        }
+                        else if (callbackData.Contains("Download_"))
+                        {
+                            await OnUpdateDownloadCurrentSession(chatUserId, messageId, callbackData);
+                        }
+                    }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, nameof(Exception));
+                
+                bool anyStep = await userStepRepository.Any(chatUserId);
+
+                if (anyStep)
+                {
+                    await userStepRepository.Remove(chatUserId);
+                }
+        
+                bool anyCashe = SessionCasheManager.Any(chatUserId);
+
+                if (anyCashe)
+                {
+                    SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+
+                    IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+
+                    await wTelegramClientManager.Disconnect();
+            
+                    SessionCasheManager.Remove(chatUserId);
+                }
+                
+                bool anySudo = await sudoRepository.Any(chatUserId);
+
+                if (anySudo)
+                {
+                    ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+                    await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "tryAgain"));
+                    
+                    return;
+                }
+                
+                bool anyUser = await userRepository.Any(chatUserId);
+                
+                if (!anyUser)
+                {
+                    await userRepository.Create(new()
+                    {
+                        ChatId = chatUserId,
+                        Language = ELanguage.En
+                    });
+
+                    _logger.Information($"- User {chatUserId} signup to bot");
+                }
+
+                ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
+                
+                await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "tryAgain"));
             }
         });
 
@@ -762,83 +951,71 @@ public class TelegramBotApi : ITelegramBotApi
         await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "help"), ParseMode.Html,
             replyParameters: messageId);
     }
-
-    public async Task OnUpdate(Update update)
+    
+    private async Task OnUpdateBackupSessions(long chatUserId, int messageId, string callbackData)
     {
-        _ = Task.Run(async () =>
+        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+        ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+
+        callbackData = callbackData.Replace("BackupSessions_", string.Empty);
+        long userChatId = Convert.ToInt64(callbackData);
+
+        _logger.Information($"- Sudo {chatUserId} Click Backup Sessions User {userChatId}");
+
+        Message msgRemoveBtn =
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
+
+        IEnumerable<Session> sessions = await sessionRepository.GetAll(userChatId);
+
+        int sessionCount = sessions.Count();
+
+        ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
+
+        if (sessionCount == default)
         {
-            try
-            {
-                if (update.CallbackQuery is null ||
-                    update.CallbackQuery.Message is null ||
-                    update.CallbackQuery.Message.Chat.Type != ChatType.Private)
-                {
-                    return;
-                }
+            _logger.Information($"- Sudo {chatUserId} User {userChatId} Not Available Session");
+            await _telegramBotClient.SendMessage(chatUserId, string.Format(
+                    Utils.GetText(eLanguageSudo, "sessionNotAvailable"),
+                    userChatId),
+                replyParameters: messageId);
 
-                long chatUserId = update.CallbackQuery.Message.Chat.Id;
-                int messageId = update.CallbackQuery.Message.MessageId;
+            await _telegramBotClient.EditMessageReplyMarkup(chatUserId, msgRemoveBtn.MessageId,
+                replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
+                    Utils.GetText(eLanguageSudo, "changePeremission"),
+                    Utils.GetText(eLanguageSudo, "backupUserSessions")));
+            return;
+        }
 
-                string? callbackData = update.CallbackQuery.Data;
+        string fileName = $"Backup Sessions User {userChatId} {Path.GetRandomFileName()}.zip";
 
-                if (string.IsNullOrEmpty(callbackData))
-                {
-                    return;
-                }
+        ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create);
 
-                switch (callbackData)
-                {
-                    case "IJoin":
-                    {
-                        await OnUpdateIJoin(chatUserId, messageId);
-                    }
-                        break;
-                    case "Reload":
-                    {
-                        await OnUpdateReload(chatUserId, messageId);
-                    }
-                        break;
-                    case "UseProxy":
-                    {
-                        await OnUpdateUseProxy(chatUserId, messageId);
-                    }
-                        break;
-                    case $"UseChangeBio":
-                    {
-                        await OnUpdateUseChangeBio(chatUserId, messageId);
-                    }
-                        break;
-                    case "UseLogCLi":
-                    {
-                        await OnUpdateUseLogCLi(chatUserId, messageId);
-                    }
-                        break;
-                    case "UseCheckReport":
-                    {
-                        await OnUpdateUseCheckReport(chatUserId, messageId);
-                    }
-                        break;
-                    default:
-                    {
-                        if (callbackData.Contains("ChangePermission_"))
-                        {
-                            await OnUpdateChangePermission(chatUserId, messageId, callbackData);
-                        }
-                        else if (callbackData.Contains("Download_"))
-                        {
-                            await OnUpdateDownloadCurrentSession(chatUserId, messageId, callbackData);
-                        }
-                    }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, nameof(Exception));
-            }
-        });
+        foreach (var session in sessions)
+        {
+            string phoneNumber = $"{session.CountryCode}{session.Number}";
 
-        await Task.CompletedTask;
+            string sessionPath = Path.Combine(AppContext.BaseDirectory, _appSettings.SessionsPath,
+                string.Concat(phoneNumber, ".session"));
+
+            zipArchive.CreateEntryFromFile(sessionPath, Path.GetFileName(sessionPath));
+        }
+
+        zipArchive.Dispose();
+
+        string zipPath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+        StreamReader streamReader = new(zipPath);
+
+        await _telegramBotClient.SendChatAction(chatUserId, ChatAction.UploadDocument);
+
+        await _telegramBotClient.SendDocument(chatUserId, streamReader.BaseStream,
+            string.Format(Utils.GetText(eLanguageSudo, "backupSessionsWarning"), userChatId),
+            replyParameters: messageId);
+
+        streamReader.Close();
+
+        File.Delete(zipPath);
     }
 
     private async Task OnUpdateDownloadCurrentSession(long chatUserId, int messageId, string callbackData)
@@ -898,7 +1075,7 @@ public class TelegramBotApi : ITelegramBotApi
         StreamReader streamReader = new(zipPath);
 
         await _telegramBotClient.SendChatAction(chatUserId, ChatAction.UploadDocument);
-        
+
         await _telegramBotClient.SendDocument(chatUserId, streamReader.BaseStream,
             Utils.GetText(eLanguageUser, "descriptionUploadSession"), replyParameters: messageId);
 
@@ -951,7 +1128,7 @@ public class TelegramBotApi : ITelegramBotApi
 
         _logger.Information($"- Sudo {chatUserId} Click Update Use Check Report Bot");
 
-        Message msgRemoveButtotn =
+        Message msgRemoveButton =
             await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
 
         ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
@@ -971,7 +1148,7 @@ public class TelegramBotApi : ITelegramBotApi
 
         await settingsRepository.Update(settings);
 
-        await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButtotn.MessageId,
+        await _telegramBotClient.EditMessageText(chatUserId, msgRemoveButton.MessageId,
             Utils.GetText(eLanguageSudo, "settings"),
             ParseMode.Html,
             replyMarkup: ReplyKeyboard.Settings(settings,
@@ -1202,7 +1379,8 @@ public class TelegramBotApi : ITelegramBotApi
                     ParseMode.Html,
                     replyParameters: messageId,
                     replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
-                        Utils.GetText(eLanguageSudo, "changePeremission")));
+                        Utils.GetText(eLanguageSudo, "changePeremission"),
+                        Utils.GetText(eLanguageSudo, "backupUserSessions")));
             }
 
             return;
@@ -1592,14 +1770,18 @@ public class TelegramBotApi : ITelegramBotApi
         callbackData = callbackData.Replace("ChangePermission_", string.Empty);
         long userChatId = Convert.ToInt64(callbackData);
 
+        _logger.Information($"- Sudo {chatUserId} Click Change Permission User {userChatId}");
+
         User user = await userRepository.Get(userChatId);
 
         if (user.IsPermissionToUse)
         {
+            _logger.Information($"- Sudo {chatUserId} Click Change Permission User {userChatId} To Unauthorize");
             await userRepository.UnauthorizedPermisionToUse(user);
         }
         else
         {
+            _logger.Information($"- Sudo {chatUserId} Click Change Permission User {userChatId} To Authorize");
             await userRepository.AuthorizedPermisionToUse(user);
         }
 
@@ -1621,7 +1803,8 @@ public class TelegramBotApi : ITelegramBotApi
                 countSessionSold, resultPermissionToUse),
             parseMode: ParseMode.Html,
             replyMarkup: ReplyKeyboard.StatusPermisionUser(userChatId,
-                Utils.GetText(eLanguageSudo, "changePeremission")));
+                Utils.GetText(eLanguageSudo, "changePeremission"),
+                Utils.GetText(eLanguageSudo, "backupUserSessions")));
     }
 
     private async Task OnUpdateIJoin(long chatUserId, int messageId)
