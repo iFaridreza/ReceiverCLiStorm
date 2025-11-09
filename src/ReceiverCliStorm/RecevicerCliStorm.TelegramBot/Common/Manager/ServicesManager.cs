@@ -8,7 +8,7 @@ using ReceiverCliStorm.TelegramBot.Common.Trigger;
 using ReceiverCliStorm.TelegramBot.Core.IRepository;
 using ReceiverCliStorm.TelegramBot.Infrastructer;
 using ReceiverCliStorm.TelegramBot.Infrastructer.Repository;
-using ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
+using ReceiverCliStorm.TelegramBot.WTelegramUtils;
 using Serilog;
 using Serilog.Sinks.TelegramBot;
 using Telegram.Bot;
@@ -41,7 +41,7 @@ public static class ServicesManager
 
     public static void InjectWTelegramFactory()
     {
-        _serviceCollection.AddScoped<IWTelegramClientManagerFactory, WTelegramClientManagerFactory>();
+        _serviceCollection.AddScoped<IWTelegramManagerFactory, WTelegramManagerFactory>();
     }
 
     public static void InjectTelegramLogger(string token, string chatIdLog)

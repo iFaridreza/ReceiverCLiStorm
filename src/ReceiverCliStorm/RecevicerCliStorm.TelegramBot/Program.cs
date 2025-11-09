@@ -5,6 +5,7 @@ using ReceiverCliStorm.TelegramBot.Bot;
 using ReceiverCliStorm.TelegramBot.Common;
 using ReceiverCliStorm.TelegramBot.Common.Dto;
 using ReceiverCliStorm.TelegramBot.Common.Manager;
+using ReceiverCliStorm.TelegramBot.Core.Domain;
 using ReceiverCliStorm.TelegramBot.Core.IRepository;
 using ReceiverCliStorm.TelegramBot.Infrastructer;
 
@@ -29,19 +30,22 @@ context.Database.EnsureCreated();
 
 ISudoRepository sudoRepository = serviceScope.ServiceProvider.GetRequiredService<ISudoRepository>();
 ISettingsRepository settingsRepository = serviceScope.ServiceProvider.GetRequiredService<ISettingsRepository>();
-ISessionInfoRepository sessionInfoRepository = serviceScope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
+ISessionInfoRepository sessionInfoRepository =
+    serviceScope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
 
 foreach (long sudo in appSettings.Sudos)
 {
     bool any = await sudoRepository.Any(sudo);
 
-    if (!any)
+    if (any)
     {
-        await sudoRepository.Create(new()
-        {
-            ChatId = sudo
-        });
+        continue;
     }
+
+    await sudoRepository.Create(new()
+    {
+        ChatId = sudo
+    });
 }
 
 bool anySettings = await settingsRepository.Any();
@@ -66,6 +70,21 @@ if (!anySessionInfo)
         ApiHash = appSettings.ApiHash,
         ApiId = appSettings.ApiId
     });
+}
+
+Settings settings = await settingsRepository.GetSingleFirst();
+
+if (settings.UseProxy)
+{
+    if (!File.Exists(appSettings.ProxyPath) || !ProxyManager.HaveData(appSettings.ProxyPath))
+    {
+        settings.UseProxy = false;
+        await settingsRepository.Update(settings);
+    }
+    else
+    {
+        ProxyManager.SetProxy(appSettings.ProxyPath);
+    }
 }
 
 LanguageManager.SetEn(appSettings.EnPath);

@@ -4,7 +4,7 @@ using ReceiverCliStorm.TelegramBot.Common.Dto;
 using ReceiverCliStorm.TelegramBot.Common.Manager;
 using ReceiverCliStorm.TelegramBot.Core.Domain;
 using ReceiverCliStorm.TelegramBot.Core.IRepository;
-using ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
+using ReceiverCliStorm.TelegramBot.WTelegramUtils;
 using Serilog;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -127,7 +127,7 @@ public class TelegramBotApi : ITelegramBotApi
                 {
                     SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
-                    IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+                    IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
                     await wTelegramClientManager.Disconnect();
             
@@ -263,7 +263,7 @@ public class TelegramBotApi : ITelegramBotApi
                 {
                     SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
-                    IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+                    IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
                     await wTelegramClientManager.Disconnect();
             
@@ -313,8 +313,8 @@ public class TelegramBotApi : ITelegramBotApi
         ISessionInfoRepository sessionInfoRepository =
             scope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
         ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
-        IWTelegramClientManagerFactory wTelegramClientManagerFactory =
-            scope.ServiceProvider.GetRequiredService<IWTelegramClientManagerFactory>();
+        IWTelegramManagerFactory wTelegramClientManagerFactory =
+            scope.ServiceProvider.GetRequiredService<IWTelegramManagerFactory>();
 
         bool anySudo = await sudoRepository.Any(chatUserId);
 
@@ -411,7 +411,7 @@ public class TelegramBotApi : ITelegramBotApi
             loging = (_, msg) => { _logger.Information($"- Log Session : {phoneNumber}\n\n{msg}"); };
         }
 
-        IWTelegramClientManager wTelegramClientManager = wTelegramClientManagerFactory
+        IWTelegramManager wTelegramClientManager = wTelegramClientManagerFactory
             .Create(
                 sessionInfo.ApiId,
                 sessionInfo.ApiHash,
@@ -485,7 +485,7 @@ public class TelegramBotApi : ITelegramBotApi
                 PhoneNumber = phoneNumber,
                 SessionPath = sessionPath,
                 InfoPhoneNumber = infoPhoneNumber,
-                WTelegramClientManager = wTelegramClientManager
+                WTelegramManager = wTelegramClientManager
             });
 
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
@@ -580,7 +580,7 @@ public class TelegramBotApi : ITelegramBotApi
             Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
             replyParameters: messageId);
 
-        IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+        IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
         try
         {
@@ -778,7 +778,7 @@ public class TelegramBotApi : ITelegramBotApi
             Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
             replyParameters: messageId);
 
-        IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+        IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
         try
         {
@@ -1458,7 +1458,7 @@ public class TelegramBotApi : ITelegramBotApi
         {
             SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
-            IWTelegramClientManager wTelegramClientManager = sessionCashe.WTelegramClientManager;
+            IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
             await wTelegramClientManager.Disconnect();
 

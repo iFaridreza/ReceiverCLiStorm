@@ -2,9 +2,9 @@
 using TL;
 using WTelegram;
 
-namespace ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
+namespace ReceiverCliStorm.TelegramBot.WTelegramUtils;
 
-public class WTelegramClientManager : IWTelegramClientManager
+public class WTelegramManager : IWTelegramManager
 {
     private Client _client;
     private string _apiId;
@@ -12,7 +12,7 @@ public class WTelegramClientManager : IWTelegramClientManager
     private string _sessionPath;
 
 
-    public WTelegramClientManager(string apiId, string apiHash, string sessionPath, Action<int, string>? logging)
+    public WTelegramManager(string apiId, string apiHash, string sessionPath, Action<int, string>? logging)
     {
         _apiId = apiId;
         _apiHash = apiHash;

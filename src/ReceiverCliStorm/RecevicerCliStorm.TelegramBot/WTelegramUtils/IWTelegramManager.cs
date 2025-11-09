@@ -1,6 +1,6 @@
-﻿namespace ReceiverCliStorm.TelegramBot.WTelegramClientUtils;
+﻿namespace ReceiverCliStorm.TelegramBot.WTelegramUtils;
 
-public interface IWTelegramClientManager
+public interface IWTelegramManager
 {
     Task Connect();
     Task Disconnect();
