@@ -1620,7 +1620,7 @@ public class TelegramBotApi : ITelegramBotApi
             await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "start"), ParseMode.Html,
                 replyParameters: messageId);
 
-            if (_appSettings.CommandsUser.Count == default)
+            if (_appSettings.CommandsSudo.Count == default)
             {
                 return;
             }
