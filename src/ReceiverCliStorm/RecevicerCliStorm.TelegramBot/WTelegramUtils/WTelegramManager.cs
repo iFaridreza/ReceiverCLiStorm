@@ -6,17 +6,25 @@ namespace ReceiverCliStorm.TelegramBot.WTelegramUtils;
 
 public class WTelegramManager : IWTelegramManager
 {
-    private Client _client;
-    private string _apiId;
-    private string _apiHash;
-    private string _sessionPath;
-
-
-    public WTelegramManager(string apiId, string apiHash, string sessionPath, Action<int, string>? logging)
+    private readonly Client _client;
+    private readonly string _apiId;
+    private readonly string _apiHash;
+    private readonly string _sessionPath;
+    private readonly string _deviceModel;
+    private readonly string _systemVersion;
+    private readonly string _appVersion;
+    private readonly string _langCode;
+    
+    public WTelegramManager(string apiId, string apiHash, string deviceModel, string systemVersion, string appVersion,
+        string langCode, string sessionPath, Action<int, string>? logging)
     {
         _apiId = apiId;
         _apiHash = apiHash;
         _sessionPath = sessionPath;
+        _deviceModel = deviceModel;
+        _systemVersion = systemVersion;
+        _appVersion = appVersion;
+        _langCode = langCode;
         Helpers.Log = logging;
         _client = new(Config);
     }
@@ -28,15 +36,22 @@ public class WTelegramManager : IWTelegramManager
             "api_id" => _apiId,
             "api_hash" => _apiHash,
             "session_pathname" => _sessionPath,
+            "device_model" => _deviceModel,
+            "system_version" => _systemVersion,
+            "app_version" => _appVersion,
+            "lang_code" => _langCode,
+            "email" => what,
             _ => null
         };
-
+        
+        //email => email_verification_code
+        
         return result;
     }
 
     public async Task Connect()
     {
-        await _client.ConnectAsync(quickResume:true);
+        await _client.ConnectAsync(quickResume: true);
     }
 
     public async Task Disconnect()
@@ -53,37 +68,6 @@ public class WTelegramManager : IWTelegramManager
     {
         string result = await _client.Login(state);
         return result;
-    }
-
-    public async Task<int> ActiveSessionCount()
-    {
-        Account_Authorizations authorizations = await _client.Account_GetAuthorizations();
-        int count = authorizations.authorizations.Count();
-        return count;
-    }
-
-    public async Task<string[]> GetMessagesText(string contactPhone, int limit)
-    {
-        Contacts_ResolvedPeer inputPeerUser = await _client.Contacts_ResolvePhone(contactPhone);
-        Messages_MessagesBase resultHistory = await _client.Messages_GetHistory(inputPeerUser, limit: limit);
-
-        ICollection<string> messages = new List<string>();
-
-        foreach (var item in resultHistory.Messages)
-        {
-            Message? message = item as Message;
-
-            if (message is null) continue;
-
-            messages.Add(message.message);
-        }
-
-        return messages.ToArray();
-    }
-
-    public void Loging(Action<int, string> loging)
-    {
-        Helpers.Log = loging;
     }
 
     public void DisableUpdate(bool disable = true)
@@ -105,13 +89,7 @@ public class WTelegramManager : IWTelegramManager
 
     public async Task UpdateBio(string bio)
     {
-        await _client.Account_UpdateProfile(about:bio);
-    }
-
-    public async Task UpdateProfilePhoto(string photoPath)
-    {
-        InputFileBase inputFile = await _client.UploadFileAsync(photoPath);
-        await _client.Photos_UploadProfilePhoto(inputFile);
+        await _client.Account_UpdateProfile(about: bio);
     }
 
     public async Task DisablePassword2Fa(string currentPassword)
@@ -177,13 +155,16 @@ public class WTelegramManager : IWTelegramManager
 
         string lastMessage = message.message;
 
-        return lastMessage.Contains("no limits") || lastMessage.Contains("Good news, no limits are currently applied to your account. You’re free as a bird!") ? false : true;
+        return !lastMessage.Contains("no limits") &&
+               !lastMessage.Contains(
+                   "Good news, no limits are currently applied to your account. You’re free as a bird!") &&
+               !lastMessage.Contains("Unfortunately") &&
+               !lastMessage.Contains(
+                   "Unfortunately, some phone numbers may trigger a harsh response from our anti-spam systems. If you think this is the case with you, you can submit a complaint to our moderators or subscribe to Telegram Premium to get less strict limits.");
     }
 
     public async Task ResetSessions()
     {
         await _client.Auth_ResetAuthorizations();
     }
-
-    public string GetSessionPath() => _sessionPath;
 }

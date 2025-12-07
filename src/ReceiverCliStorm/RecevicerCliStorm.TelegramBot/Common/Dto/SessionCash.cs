@@ -2,10 +2,11 @@
 
 namespace ReceiverCliStorm.TelegramBot.Common.Dto;
 
-public class SessionCashe
+public class SessionCash
 {
     public required string PhoneNumber { get; init; }
     public required string SessionPath { get; init; }
+    public required DeviceInfo DeviceInfo { get; init; }
     public required InfoPhoneNumber InfoPhoneNumber { get; init; }
     public required IWTelegramManager WTelegramManager { get; init; }
 }

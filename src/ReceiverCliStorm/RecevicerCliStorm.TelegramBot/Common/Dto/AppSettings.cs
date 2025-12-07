@@ -5,6 +5,7 @@ public class AppSettings
     public string Token { get; set; } = string.Empty;
     public string DatabaseName { get; set; } = string.Empty;
     public string SessionsPath { get; set; } = string.Empty;
+    public string DeviceInfoPath { get; set; } = string.Empty;
     public string ApiId { get; set; } = string.Empty;
     public string ApiHash { get; set; } = string.Empty;
     public string ProxyPath { get; set; } = string.Empty;

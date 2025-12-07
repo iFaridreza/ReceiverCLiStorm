@@ -87,6 +87,7 @@ if (settings.UseProxy)
     }
 }
 
+DeviceInfoManager.SetDevice(appSettings.DeviceInfoPath);
 LanguageManager.SetEn(appSettings.EnPath);
 LanguageManager.SetFa(appSettings.FaPath);
 
@@ -99,4 +100,4 @@ IScheduler scheduler = await schedulerFactory.GetScheduler();
 scheduler.JobFactory = serviceScope.ServiceProvider.GetRequiredService<IJobFactory>();
 await scheduler.Start();
 
-Console.ReadKey(false);
+Console.ReadKey();

@@ -8,6 +8,9 @@ using ReceiverCliStorm.TelegramBot.WTelegramUtils;
 using Serilog;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -51,12 +54,12 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 return;
             }
-            
+
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
-            ISudoRepository  sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+            ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
             IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
             IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
-            
+
             long chatUserId = message.From.Id;
             int messageId = message.MessageId;
 
@@ -113,27 +116,27 @@ public class TelegramBotApi : ITelegramBotApi
             catch (Exception ex)
             {
                 _logger.Error(ex, nameof(Exception));
-                
+
                 bool anyStep = await userStepRepository.Any(chatUserId);
 
                 if (anyStep)
                 {
                     await userStepRepository.Remove(chatUserId);
                 }
-        
-                bool anyCashe = SessionCasheManager.Any(chatUserId);
+
+                bool anyCashe = SessionCashManager.Any(chatUserId);
 
                 if (anyCashe)
                 {
-                    SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+                    SessionCash sessionCash = SessionCashManager.Get(chatUserId);
 
-                    IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
+                    IWTelegramManager wTelegramClientManager = sessionCash.WTelegramManager;
 
                     await wTelegramClientManager.Disconnect();
-            
-                    SessionCasheManager.Remove(chatUserId);
+
+                    SessionCashManager.Remove(chatUserId);
                 }
-                
+
                 bool anySudo = await sudoRepository.Any(chatUserId);
 
                 if (anySudo)
@@ -141,12 +144,12 @@ public class TelegramBotApi : ITelegramBotApi
                     ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
                     await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "tryAgain"));
-                    
+
                     return;
                 }
-                
+
                 bool anyUser = await userRepository.Any(chatUserId);
-                
+
                 if (!anyUser)
                 {
                     await userRepository.Create(new()
@@ -159,7 +162,7 @@ public class TelegramBotApi : ITelegramBotApi
                 }
 
                 ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
-                
+
                 await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "tryAgain"));
             }
         });
@@ -167,7 +170,7 @@ public class TelegramBotApi : ITelegramBotApi
         await Task.CompletedTask;
     }
 
-     public async Task OnUpdate(Update update)
+    public async Task OnUpdate(Update update)
     {
         _ = Task.Run(async () =>
         {
@@ -179,14 +182,14 @@ public class TelegramBotApi : ITelegramBotApi
             }
 
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
-            ISudoRepository  sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
+            ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
             IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
             IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
-                
+
             long chatUserId = update.CallbackQuery.Message.Chat.Id;
             int messageId = update.CallbackQuery.Message.MessageId;
 
-            
+
             try
             {
                 string? callbackData = update.CallbackQuery.Data;
@@ -249,27 +252,27 @@ public class TelegramBotApi : ITelegramBotApi
             catch (Exception ex)
             {
                 _logger.Error(ex, nameof(Exception));
-                
+
                 bool anyStep = await userStepRepository.Any(chatUserId);
 
                 if (anyStep)
                 {
                     await userStepRepository.Remove(chatUserId);
                 }
-        
-                bool anyCashe = SessionCasheManager.Any(chatUserId);
+
+                bool anyCashe = SessionCashManager.Any(chatUserId);
 
                 if (anyCashe)
                 {
-                    SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+                    SessionCash sessionCash = SessionCashManager.Get(chatUserId);
 
-                    IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
+                    IWTelegramManager wTelegramClientManager = sessionCash.WTelegramManager;
 
                     await wTelegramClientManager.Disconnect();
-            
-                    SessionCasheManager.Remove(chatUserId);
+
+                    SessionCashManager.Remove(chatUserId);
                 }
-                
+
                 bool anySudo = await sudoRepository.Any(chatUserId);
 
                 if (anySudo)
@@ -277,12 +280,12 @@ public class TelegramBotApi : ITelegramBotApi
                     ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
                     await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageSudo, "tryAgain"));
-                    
+
                     return;
                 }
-                
+
                 bool anyUser = await userRepository.Any(chatUserId);
-                
+
                 if (!anyUser)
                 {
                     await userRepository.Create(new()
@@ -295,7 +298,7 @@ public class TelegramBotApi : ITelegramBotApi
                 }
 
                 ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
-                
+
                 await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "tryAgain"));
             }
         });
@@ -411,13 +414,20 @@ public class TelegramBotApi : ITelegramBotApi
             loging = (_, msg) => { _logger.Information($"- Log Session : {phoneNumber}\n\n{msg}"); };
         }
 
+        DeviceInfo deviceInfo = DeviceInfoManager.RandomDevice();
+
         IWTelegramManager wTelegramClientManager = wTelegramClientManagerFactory
             .Create(
                 sessionInfo.ApiId,
                 sessionInfo.ApiHash,
+                deviceInfo.DeviceModel,
+                deviceInfo.SystemVersion,
+                deviceInfo.AppVersion,
+                deviceInfo.LangCode,
                 sessionPath,
                 loging
             );
+
         try
         {
             await wTelegramClientManager.Connect();
@@ -454,6 +464,20 @@ public class TelegramBotApi : ITelegramBotApi
 
             string state = await wTelegramClientManager.Login(phoneNumber);
 
+            if (state == "email")
+            {
+                _logger.Information($"- User {chatUserId} Login Session {phoneNumber} State: {state} Bot");
+
+                await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
+                    Utils.GetText(eLanguageUser, "numberIsNotEmailLogin"));
+
+                await wTelegramClientManager.Disconnect();
+                
+                File.Delete(sessionPath);
+                
+                return;
+            }
+            
             if (string.IsNullOrEmpty(state) || state != "verification_code")
             {
                 _logger.Information($"- User {chatUserId} Login Session {phoneNumber} State: {state} Bot");
@@ -461,6 +485,10 @@ public class TelegramBotApi : ITelegramBotApi
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "tryAgain"));
 
+                await wTelegramClientManager.Disconnect();
+                
+                File.Delete(sessionPath);
+                
                 return;
             }
 
@@ -480,12 +508,13 @@ public class TelegramBotApi : ITelegramBotApi
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
-            SessionCasheManager.AddOrUpdate(chatUserId, new()
+            SessionCashManager.AddOrUpdate(chatUserId, new()
             {
                 PhoneNumber = phoneNumber,
                 SessionPath = sessionPath,
                 InfoPhoneNumber = infoPhoneNumber,
-                WTelegramManager = wTelegramClientManager
+                WTelegramManager = wTelegramClientManager,
+                DeviceInfo = deviceInfo
             });
 
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
@@ -539,10 +568,9 @@ public class TelegramBotApi : ITelegramBotApi
         ISessionInfoRepository sessionInfoRepository =
             scope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
 
-
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
-        bool anyCashe = SessionCasheManager.Any(chatUserId);
+        bool anyCashe = SessionCashManager.Any(chatUserId);
 
         if (!anyCashe)
         {
@@ -556,7 +584,7 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+        SessionCash sessionCash = SessionCashManager.Get(chatUserId);
 
         bool isValidLoginCode = int.TryParse(messageText, out _);
         const int validLenghtLoginCode = 5;
@@ -564,7 +592,7 @@ public class TelegramBotApi : ITelegramBotApi
         if (!isValidLoginCode || messageText.Length != validLenghtLoginCode)
         {
             _logger.Information(
-                $"- User {chatUserId} Invalid Login Code {messageText} For Phone {sessionCashe.PhoneNumber} Bot");
+                $"- User {chatUserId} Invalid Login Code {messageText} For Phone {sessionCash.PhoneNumber} Bot");
 
             await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "invalidCode"),
                 ParseMode.Html,
@@ -574,13 +602,13 @@ public class TelegramBotApi : ITelegramBotApi
         }
 
         await userStepRepository.Remove(chatUserId);
-        SessionCasheManager.Remove(chatUserId);
+        SessionCashManager.Remove(chatUserId);
 
         Message msgWiteProsessing = await _telegramBotClient.SendMessage(chatUserId,
             Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
             replyParameters: messageId);
 
-        IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
+        IWTelegramManager wTelegramClientManager = sessionCash.WTelegramManager;
 
         try
         {
@@ -589,7 +617,7 @@ public class TelegramBotApi : ITelegramBotApi
             if (string.IsNullOrEmpty(state))
             {
                 _logger.Information(
-                    $"- User {chatUserId} Login Code {messageText} Correct Sucsessfully Login To {sessionCashe.PhoneNumber} Bot");
+                    $"- User {chatUserId} Login Code {messageText} Correct Sucsessfully Login To {sessionCash.PhoneNumber} Bot");
 
                 wTelegramClientManager.DisableUpdate();
 
@@ -602,7 +630,7 @@ public class TelegramBotApi : ITelegramBotApi
                     bool isReport = await wTelegramClientManager.IsReport();
 
                     _logger.Information(
-                        $"- User {chatUserId} State Report {sessionCashe.PhoneNumber} Is {isReport} Bot");
+                        $"- User {chatUserId} State Report {sessionCash.PhoneNumber} Is {isReport} Bot");
 
                     if (isReport)
                     {
@@ -611,7 +639,7 @@ public class TelegramBotApi : ITelegramBotApi
 
                         await wTelegramClientManager.Logout();
                         await wTelegramClientManager.Disconnect();
-                        File.Delete(sessionCashe.SessionPath);
+                        File.Delete(sessionCash.SessionPath);
 
                         return;
                     }
@@ -619,12 +647,12 @@ public class TelegramBotApi : ITelegramBotApi
 
                 if (settings.UseChangeBio)
                 {
-                    _logger.Information($"- User {chatUserId} Set Bio {sessionCashe.PhoneNumber} Sucsessfully Bot");
+                    _logger.Information($"- User {chatUserId} Set Bio {sessionCash.PhoneNumber} Sucsessfully Bot");
 
                     await wTelegramClientManager.UpdateBio(_appSettings.Bio);
                 }
 
-                _logger.Information($"- User {chatUserId} Enable 2Fa Password Session {sessionCashe.PhoneNumber} Bot");
+                _logger.Information($"- User {chatUserId} Enable 2Fa Password Session {sessionCash.PhoneNumber} Bot");
 
                 await wTelegramClientManager.EnablePassword2Fa(_appSettings.Password2Fa, _appSettings.Bio);
                 await wTelegramClientManager.ChangeStatus(online: false);
@@ -634,24 +662,31 @@ public class TelegramBotApi : ITelegramBotApi
 
                 await sessionRepository.Create(new()
                 {
-                    CountryCode = sessionCashe.InfoPhoneNumber.CountryCode,
-                    Number = sessionCashe.InfoPhoneNumber.PhoneNumber,
+                    CountryCode = sessionCash.InfoPhoneNumber.CountryCode,
+                    Number = sessionCash.InfoPhoneNumber.PhoneNumber,
                     ESessionStatus = ESessionStatus.Exists,
                     RegisterDate = Utils.GetDateTime(),
                     SessionInfo = sessionInfo,
-                    User = user
+                    User = user,
+                    DeviceAuthInfo = new()
+                    {
+                        DeviceModel = sessionCash.DeviceInfo.DeviceModel,
+                        AppVersion = sessionCash.DeviceInfo.AppVersion,
+                        LangCode = sessionCash.DeviceInfo.LangCode,
+                        SystemVersion = sessionCash.DeviceInfo.SystemVersion
+                    }
                 });
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
-                    string.Format(Utils.GetText(eLanguageUser, "loginSucsess"), sessionCashe.PhoneNumber)
-                    , replyMarkup: ReplyKeyboard.DownloadCurrentSession(Utils.GetText(eLanguageUser, "downloadCurrentSession"), sessionCashe.PhoneNumber));
+                    string.Format(Utils.GetText(eLanguageUser, "loginSucsess"), sessionCash.PhoneNumber)
+                    , replyMarkup: ReplyKeyboard.DownloadCurrentSession(Utils.GetText(eLanguageUser, "downloadCurrentSession"), sessionCash.PhoneNumber));
 
                 await wTelegramClientManager.Disconnect();
             }
             else if (state == "verification_code")
             {
                 _logger.Information(
-                    $"- User {chatUserId} Invalid Login Code {messageText} Invalid {sessionCashe.PhoneNumber} Bot");
+                    $"- User {chatUserId} Invalid Login Code {messageText} Invalid {sessionCash.PhoneNumber} Bot");
 
                 await userStepRepository.Create(new()
                 {
@@ -660,14 +695,14 @@ public class TelegramBotApi : ITelegramBotApi
                     ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
                 });
 
-                SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
+                SessionCashManager.AddOrUpdate(chatUserId, sessionCash);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
-                    string.Format(Utils.GetText(eLanguageUser, "loginCode"), sessionCashe.PhoneNumber));
+                    string.Format(Utils.GetText(eLanguageUser, "loginCode"), sessionCash.PhoneNumber));
             }
             else if (state == "password")
             {
-                _logger.Information($"- User {chatUserId} Need 2Fa Password For Phone {sessionCashe.PhoneNumber} Bot");
+                _logger.Information($"- User {chatUserId} Need 2Fa Password For Phone {sessionCash.PhoneNumber} Bot");
 
                 await userStepRepository.Create(new()
                 {
@@ -676,7 +711,7 @@ public class TelegramBotApi : ITelegramBotApi
                     ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
                 });
 
-                SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
+                SessionCashManager.AddOrUpdate(chatUserId, sessionCash);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "password2Fa"));
@@ -686,41 +721,41 @@ public class TelegramBotApi : ITelegramBotApi
             ex.Message == "FROZEN_METHOD_INVALID" ||
             ex.Message.Contains("FROZEN"))
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Frozen Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Frozen Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneFrozen"));
             await wTelegramClientManager.Logout();
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
         catch (Exception ex) when (
             ex.Message == "AUTH_KEY_UNREGISTERED" ||
             ex.Message == "SESSION_REVOKED")
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Takeout / Revoked Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Takeout / Revoked Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneRevoked"));
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
         catch (Exception ex) when (ex.Message == "PHONE_CODE_EXPIRED")
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Login Code Expire Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Login Code Expire Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "loginCodeExpire"));
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
         catch (Exception ex) when (
             ex.Message == "USER_DEACTIVATED" ||
             ex.Message == "USER_DEACTIVATED_BAN" ||
             ex.Message == "PHONE_NUMBER_BANNED")
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Ban Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Ban Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneBan"));
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.PhoneNumber);
+            File.Delete(sessionCash.PhoneNumber);
         }
         catch (Exception ex) when (
             ex.Message.Contains("BadMsgNotification") ||
@@ -728,7 +763,7 @@ public class TelegramBotApi : ITelegramBotApi
             ex.Message.Contains("TimedOut") ||
             ex.Message.Contains("A connection attempt failed"))
         {
-            _logger.Warning(ex, $"- User {chatUserId} Login Session {sessionCashe.PhoneNumber} Bot");
+            _logger.Warning(ex, $"- User {chatUserId} Login Session {sessionCash.PhoneNumber} Bot");
             await userStepRepository.Create(new()
             {
                 ChatId = chatUserId,
@@ -736,10 +771,10 @@ public class TelegramBotApi : ITelegramBotApi
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
-            SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
+            SessionCashManager.AddOrUpdate(chatUserId, sessionCash);
 
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
-                string.Format(Utils.GetText(eLanguageUser, "loginCode"), sessionCashe.PhoneNumber));
+                string.Format(Utils.GetText(eLanguageUser, "loginCode"), sessionCash.PhoneNumber));
         }
     }
 
@@ -755,7 +790,7 @@ public class TelegramBotApi : ITelegramBotApi
 
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
-        bool anyCashe = SessionCasheManager.Any(chatUserId);
+        bool anyCashe = SessionCashManager.Any(chatUserId);
 
         if (!anyCashe)
         {
@@ -769,16 +804,16 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+        SessionCash sessionCash = SessionCashManager.Get(chatUserId);
 
         await userStepRepository.Remove(chatUserId);
-        SessionCasheManager.Remove(chatUserId);
+        SessionCashManager.Remove(chatUserId);
 
         Message msgWiteProsessing = await _telegramBotClient.SendMessage(chatUserId,
             Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
             replyParameters: messageId);
 
-        IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
+        IWTelegramManager wTelegramClientManager = sessionCash.WTelegramManager;
 
         try
         {
@@ -787,7 +822,7 @@ public class TelegramBotApi : ITelegramBotApi
             if (string.IsNullOrEmpty(state))
             {
                 _logger.Information(
-                    $"- User {chatUserId} Login Password2Fa {messageText} Correct Sucsessfully Login To {sessionCashe.PhoneNumber} Bot");
+                    $"- User {chatUserId} Login Password2Fa {messageText} Correct Sucsessfully Login To {sessionCash.PhoneNumber} Bot");
 
                 wTelegramClientManager.DisableUpdate();
 
@@ -796,7 +831,7 @@ public class TelegramBotApi : ITelegramBotApi
                 await wTelegramClientManager.DisablePassword2Fa(messageText);
 
                 _logger.Information(
-                    $"- User {chatUserId} Disable Password2Fa {messageText} Phone {sessionCashe.PhoneNumber} Bot");
+                    $"- User {chatUserId} Disable Password2Fa {messageText} Phone {sessionCash.PhoneNumber} Bot");
 
                 Settings settings = await settingsRepository.GetSingleFirst();
 
@@ -805,7 +840,7 @@ public class TelegramBotApi : ITelegramBotApi
                     bool isReport = await wTelegramClientManager.IsReport();
 
                     _logger.Information(
-                        $"- User {chatUserId} State Report {sessionCashe.PhoneNumber} Is {isReport} Bot");
+                        $"- User {chatUserId} State Report {sessionCash.PhoneNumber} Is {isReport} Bot");
 
                     if (isReport)
                     {
@@ -814,7 +849,7 @@ public class TelegramBotApi : ITelegramBotApi
 
                         await wTelegramClientManager.Logout();
                         await wTelegramClientManager.Disconnect();
-                        File.Delete(sessionCashe.SessionPath);
+                        File.Delete(sessionCash.SessionPath);
 
                         return;
                     }
@@ -822,12 +857,12 @@ public class TelegramBotApi : ITelegramBotApi
 
                 if (settings.UseChangeBio)
                 {
-                    _logger.Information($"- User {chatUserId} Set Bio {sessionCashe.PhoneNumber} Sucsessfully Bot");
+                    _logger.Information($"- User {chatUserId} Set Bio {sessionCash.PhoneNumber} Sucsessfully Bot");
 
                     await wTelegramClientManager.UpdateBio(_appSettings.Bio);
                 }
 
-                _logger.Information($"- User {chatUserId} Enable 2Fa Password Session {sessionCashe.PhoneNumber} Bot");
+                _logger.Information($"- User {chatUserId} Enable 2Fa Password Session {sessionCash.PhoneNumber} Bot");
 
                 await wTelegramClientManager.EnablePassword2Fa(_appSettings.Password2Fa, _appSettings.Bio);
 
@@ -838,23 +873,30 @@ public class TelegramBotApi : ITelegramBotApi
 
                 await sessionRepository.Create(new()
                 {
-                    CountryCode = sessionCashe.InfoPhoneNumber.CountryCode,
-                    Number = sessionCashe.InfoPhoneNumber.PhoneNumber,
+                    CountryCode = sessionCash.InfoPhoneNumber.CountryCode,
+                    Number = sessionCash.InfoPhoneNumber.PhoneNumber,
                     ESessionStatus = ESessionStatus.Exists,
                     RegisterDate = Utils.GetDateTime(),
                     SessionInfo = sessionInfo,
-                    User = user
+                    User = user,
+                    DeviceAuthInfo = new()
+                    {
+                        DeviceModel = sessionCash.DeviceInfo.DeviceModel,
+                        AppVersion = sessionCash.DeviceInfo.AppVersion,
+                        LangCode = sessionCash.DeviceInfo.LangCode,
+                        SystemVersion = sessionCash.DeviceInfo.SystemVersion
+                    }
                 });
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
-                    string.Format(Utils.GetText(eLanguageUser, "loginSucsess"), sessionCashe.PhoneNumber)
-                    , replyMarkup: ReplyKeyboard.DownloadCurrentSession(Utils.GetText(eLanguageUser, "downloadCurrentSession"), sessionCashe.PhoneNumber));
+                    string.Format(Utils.GetText(eLanguageUser, "loginSucsess"), sessionCash.PhoneNumber)
+                    , replyMarkup: ReplyKeyboard.DownloadCurrentSession(Utils.GetText(eLanguageUser, "downloadCurrentSession"), sessionCash.PhoneNumber));
 
                 await wTelegramClientManager.Disconnect();
             }
             else if (state == "password")
             {
-                _logger.Information($"- User {chatUserId} Need 2Fa Password For Phone {sessionCashe.PhoneNumber} Bot");
+                _logger.Information($"- User {chatUserId} Need 2Fa Password For Phone {sessionCash.PhoneNumber} Bot");
 
                 await userStepRepository.Create(new()
                 {
@@ -863,7 +905,7 @@ public class TelegramBotApi : ITelegramBotApi
                     ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
                 });
 
-                SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
+                SessionCashManager.AddOrUpdate(chatUserId, sessionCash);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "password2Fa"));
@@ -873,41 +915,41 @@ public class TelegramBotApi : ITelegramBotApi
             ex.Message == "FROZEN_METHOD_INVALID" ||
             ex.Message.Contains("FROZEN"))
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Frozen Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Frozen Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneFrozen"));
             await wTelegramClientManager.Logout();
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
         catch (Exception ex) when (ex.Message == "PHONE_PASSWORD_FLOOD")
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Flood 2Fa Password Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Flood 2Fa Password Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "password2FaFlood"));
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
         catch (Exception ex) when (
             ex.Message == "AUTH_KEY_UNREGISTERED" ||
             ex.Message == "SESSION_REVOKED")
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Takeout / Revoked Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Takeout / Revoked Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneRevoked"));
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
         catch (Exception ex) when (
             ex.Message == "USER_DEACTIVATED" ||
             ex.Message == "USER_DEACTIVATED_BAN" ||
             ex.Message == "PHONE_NUMBER_BANNED")
         {
-            _logger.Information($"- User {chatUserId} Session {sessionCashe.PhoneNumber} Ban Bot");
+            _logger.Information($"- User {chatUserId} Session {sessionCash.PhoneNumber} Ban Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneBan"));
             await wTelegramClientManager.Disconnect();
-            File.Delete(sessionCashe.PhoneNumber);
+            File.Delete(sessionCash.PhoneNumber);
         }
         catch (Exception ex) when (
             ex.Message.Contains("BadMsgNotification") ||
@@ -915,7 +957,7 @@ public class TelegramBotApi : ITelegramBotApi
             ex.Message.Contains("TimedOut") ||
             ex.Message.Contains("A connection attempt failed"))
         {
-            _logger.Warning(ex, $"- User {chatUserId} Login Session {sessionCashe.PhoneNumber} Bot");
+            _logger.Warning(ex, $"- User {chatUserId} Login Session {sessionCash.PhoneNumber} Bot");
 
             await userStepRepository.Create(new()
             {
@@ -924,7 +966,7 @@ public class TelegramBotApi : ITelegramBotApi
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
-            SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
+            SessionCashManager.AddOrUpdate(chatUserId, sessionCash);
 
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "password2Fa"));
@@ -951,7 +993,7 @@ public class TelegramBotApi : ITelegramBotApi
         await _telegramBotClient.SendMessage(chatUserId, Utils.GetText(eLanguageUser, "help"), ParseMode.Html,
             replyParameters: messageId);
     }
-    
+
     private async Task OnUpdateBackupSessions(long chatUserId, int messageId, string callbackData)
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
@@ -987,7 +1029,9 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        string fileName = $"Backup Sessions User {userChatId} {Path.GetRandomFileName()}.zip";
+        string randomFileName = Path.GetRandomFileName();
+        
+        string fileName = $"Backup Sessions User {userChatId} {randomFileName}.zip";
 
         ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create);
 
@@ -997,8 +1041,46 @@ public class TelegramBotApi : ITelegramBotApi
 
             string sessionPath = Path.Combine(AppContext.BaseDirectory, _appSettings.SessionsPath,
                 string.Concat(phoneNumber, ".session"));
+            
+            string jsonFileName = $"{phoneNumber}.json";
+            
+            string jsonPath = Path.Combine(AppContext.BaseDirectory, jsonFileName);
 
+            if (File.Exists(jsonPath))
+            {
+                File.Delete(jsonPath);
+            }
+            
+            await using FileStream fileStream = new(jsonFileName, FileMode.CreateNew);
+            await using StreamWriter writerStream = new(fileStream, Encoding.UTF8);
+
+            var sessionMapToJsonType = new
+            {
+                session.CountryCode,
+                session.Number,
+                session.DeviceAuthInfo.DeviceModel,
+                session.DeviceAuthInfo.SystemVersion,
+                session.DeviceAuthInfo.AppVersion,
+                session.DeviceAuthInfo.LangCode
+            };
+
+            string dataSessionToJson =
+                JsonSerializer.Serialize(sessionMapToJsonType, new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+
+
+            await writerStream.WriteAsync(dataSessionToJson);
+
+            writerStream.Close();
+            fileStream.Close();
+            
             zipArchive.CreateEntryFromFile(sessionPath, Path.GetFileName(sessionPath));
+            zipArchive.CreateEntryFromFile(jsonPath, jsonFileName);
+            
+            File.Delete(jsonPath);
         }
 
         zipArchive.Dispose();
@@ -1064,13 +1146,51 @@ public class TelegramBotApi : ITelegramBotApi
 
         await sessionRepository.UpdateStatus(session, ESessionStatus.Sold);
 
-        string fileName = $"{phoneNumber} {Path.GetRandomFileName()}.zip";
+        string randomFileName = Path.GetRandomFileName();
 
-        ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create);
+        string zipFileName = $"{phoneNumber} {randomFileName}.zip";
+        string jsonFileName = $"{phoneNumber}.json";
+
+        string jsonPath = Path.Combine(AppContext.BaseDirectory, jsonFileName);
+
+        if (File.Exists(jsonPath))
+        {
+            File.Delete(jsonPath);
+        }
+
+        await using FileStream fileStream = new(jsonFileName, FileMode.CreateNew);
+        await using StreamWriter writerStream = new(fileStream, Encoding.UTF8);
+
+        var sessionMapToJsonType = new
+        {
+            session.CountryCode,
+            session.Number,
+            session.DeviceAuthInfo.DeviceModel,
+            session.DeviceAuthInfo.SystemVersion,
+            session.DeviceAuthInfo.AppVersion,
+            session.DeviceAuthInfo.LangCode
+        };
+
+        string dataSessionToJson =
+            JsonSerializer.Serialize(sessionMapToJsonType, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
+
+
+        await writerStream.WriteAsync(dataSessionToJson);
+
+        writerStream.Close();
+        fileStream.Close();
+
+        using ZipArchive zipArchive = ZipFile.Open(zipFileName, ZipArchiveMode.Create);
         zipArchive.CreateEntryFromFile(sessionPath, Path.GetFileName(sessionPath));
+        zipArchive.CreateEntryFromFile(jsonPath, jsonFileName);
+
         zipArchive.Dispose();
 
-        string zipPath = Path.Combine(AppContext.BaseDirectory, fileName);
+        string zipPath = Path.Combine(AppContext.BaseDirectory, zipFileName);
 
         StreamReader streamReader = new(zipPath);
 
@@ -1082,6 +1202,7 @@ public class TelegramBotApi : ITelegramBotApi
         streamReader.Close();
 
         File.Delete(zipPath);
+        File.Delete(jsonPath);
     }
 
     private async Task OnSettings(long chatUserId, int messageId)
@@ -1452,17 +1573,17 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        bool anySessionCashe = SessionCasheManager.Any(chatUserId);
+        bool anySessionCashe = SessionCashManager.Any(chatUserId);
 
         if (anySessionCashe)
         {
-            SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
+            SessionCash sessionCash = SessionCashManager.Get(chatUserId);
 
-            IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
+            IWTelegramManager wTelegramClientManager = sessionCash.WTelegramManager;
 
             await wTelegramClientManager.Disconnect();
 
-            File.Delete(sessionCashe.SessionPath);
+            File.Delete(sessionCash.SessionPath);
         }
 
         _logger.Information($"- User {chatUserId} /cancel bot");

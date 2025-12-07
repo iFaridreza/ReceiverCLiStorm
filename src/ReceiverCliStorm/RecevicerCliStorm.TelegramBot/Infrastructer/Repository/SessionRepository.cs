@@ -30,19 +30,28 @@ public class SessionRepository : ISessionRepository
         Session session = await _context.Session
             .Include(x => x.SessionInfo)
             .Include(x => x.User)
+            .Include(x => x.DeviceAuthInfo)
             .SingleAsync(x => x.CountryCode == countryCode && x.Number == number);
         return session;
     }
 
     public async Task<IEnumerable<Session>> GetAll(long chatUserId)
     {
-        IEnumerable<Session> sessions = await _context.Session.Include(x=>x.SessionInfo).Include(x=>x.User).Where(x=>x.User.ChatId == chatUserId).ToListAsync();
+        IEnumerable<Session> sessions = await _context.Session.Include(x => x.SessionInfo)
+            .Include(x => x.User)
+            .Include(x => x.DeviceAuthInfo)
+            .Where(x => x.User.ChatId == chatUserId).ToListAsync();
         return sessions;
     }
 
     public async Task<IEnumerable<Session>> GetAll()
     {
-        IEnumerable<Session> sessions = await _context.Session.Include(x=>x.SessionInfo).Include(x=>x.User).ToListAsync();
+        IEnumerable<Session> sessions =
+            await _context.Session
+                .Include(x => x.SessionInfo)
+                .Include(x => x.User)
+                .Include(x => x.DeviceAuthInfo)
+                .ToListAsync();
         return sessions;
     }
 

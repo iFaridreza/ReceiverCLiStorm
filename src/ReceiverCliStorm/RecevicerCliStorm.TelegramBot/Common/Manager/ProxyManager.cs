@@ -48,7 +48,7 @@ public class ProxyManager
     {
         try
         {
-            var proxy = new Socks5ProxyClient(proxyHost, proxyPort, username, password);
+            Socks5ProxyClient proxy = new(proxyHost, proxyPort, username, password);
             using var stream = proxy.CreateConnection("core.telegram.org", 443);
             return stream != null && stream.Connected;
         }

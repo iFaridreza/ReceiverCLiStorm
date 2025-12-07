@@ -12,14 +12,7 @@ public static class LanguageManager
         En = new Dictionary<string, string>();
         Fa = new Dictionary<string, string>();
     }
-
-    public static bool HaveData(string pathEn)
-    {
-        string data = File.ReadAllText(pathEn);
-
-        return !string.IsNullOrEmpty(data);
-    }
-
+    
     public static string GetEnValue(string key)
     {
         if (!En.TryGetValue(key, out string? value))

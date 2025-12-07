@@ -6,7 +6,9 @@ namespace ReceiverCliStorm.TelegramBot.Infrastructer;
 
 public class Context : DbContext
 {
-    public Context(DbContextOptions options) : base(options) { }
+    public Context(DbContextOptions options) : base(options)
+    {
+    }
 
     public DbSet<Sudo> Sudo { get; set; }
     public DbSet<User> User { get; set; }
@@ -15,6 +17,8 @@ public class Context : DbContext
     public DbSet<UserStep> UserStep { get; set; }
     public DbSet<Settings> Settings { get; set; }
 
+    public DbSet<DeviceAuthInfo> DeviceAuthInfo { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var sudoBuilder = modelBuilder.Entity<Sudo>();
@@ -22,7 +26,8 @@ public class Context : DbContext
         sudoBuilder.HasKey(x => x.Id);
         sudoBuilder.HasIndex(x => x.ChatId).IsUnique();
         sudoBuilder.Property(x => x.ChatId).HasMaxLength(50).IsRequired();
-        sudoBuilder.Property(x => x.Language).HasConversion(new EnumToStringConverter<ELanguage>()).HasDefaultValue(ELanguage.En);
+        sudoBuilder.Property(x => x.Language).HasConversion(new EnumToStringConverter<ELanguage>())
+            .HasDefaultValue(ELanguage.En);
 
 
         var userBuilder = modelBuilder.Entity<User>();
@@ -31,7 +36,8 @@ public class Context : DbContext
         userBuilder.HasIndex(x => x.ChatId).IsUnique();
         userBuilder.Property(x => x.ChatId).HasMaxLength(50).IsRequired();
         userBuilder.Property(x => x.IsPermissionToUse).IsRequired().HasDefaultValue(false);
-        userBuilder.Property(x => x.Language).HasConversion(new EnumToStringConverter<ELanguage>()).HasDefaultValue(ELanguage.En);
+        userBuilder.Property(x => x.Language).HasConversion(new EnumToStringConverter<ELanguage>())
+            .HasDefaultValue(ELanguage.En);
 
 
         var sessionBuilder = modelBuilder.Entity<Session>();
@@ -45,16 +51,27 @@ public class Context : DbContext
         sessionBuilder.Property(x => x.CountryCode).HasMaxLength(5).IsRequired();
         sessionBuilder.Property(x => x.Number).IsRequired();
         sessionBuilder.Property(x => x.RegisterDate).IsRequired();
-        sessionBuilder.Property(x => x.ESessionStatus).HasConversion(new EnumToStringConverter<ESessionStatus>()).HasDefaultValue(ESessionStatus.Exists);
+        sessionBuilder.Property(x => x.ESessionStatus).HasConversion(new EnumToStringConverter<ESessionStatus>())
+            .HasDefaultValue(ESessionStatus.Exists);
         sessionBuilder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         sessionBuilder.HasOne(x => x.SessionInfo).WithMany().HasForeignKey(x => x.SessionInfoId);
+        sessionBuilder.HasOne(x => x.DeviceAuthInfo).WithOne().HasForeignKey<Session>(x => x.DeviceAuthInfoId)
+            .OnDelete(DeleteBehavior.Cascade);
 
+        
         var sessionInfoBuilder = modelBuilder.Entity<SessionInfo>();
         sessionInfoBuilder.ToTable("SessionInfo");
         sessionInfoBuilder.HasKey(x => x.Id);
         sessionInfoBuilder.Property(x => x.ApiId).IsRequired();
         sessionInfoBuilder.Property(x => x.ApiHash).IsRequired();
 
+        var deviceAuthInfoBuilder = modelBuilder.Entity<DeviceAuthInfo>();
+        deviceAuthInfoBuilder.ToTable("DeviceAuthInfo");
+        deviceAuthInfoBuilder.HasKey(x => x.Id);
+        deviceAuthInfoBuilder.Property(x => x.DeviceModel).HasMaxLength(100).IsRequired();
+        deviceAuthInfoBuilder.Property(x => x.SystemVersion).HasMaxLength(50).IsRequired();
+        deviceAuthInfoBuilder.Property(x => x.AppVersion).HasMaxLength(20).IsRequired();
+        deviceAuthInfoBuilder.Property(x => x.LangCode).HasMaxLength(2).IsRequired();
 
         var userStepBuilder = modelBuilder.Entity<UserStep>();
         userStepBuilder.ToTable("UserStep");

@@ -11,4 +11,6 @@ public class Session
     public required User User { get; set; }
     public long SessionInfoId { get; set; }
     public required SessionInfo SessionInfo { get; set; }
+    public long DeviceAuthInfoId { get; set; }
+    public required DeviceAuthInfo DeviceAuthInfo { get; set; }
 }
