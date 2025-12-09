@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using ReceiverCliStorm.TelegramBot.Common.Dto;
 using ReceiverCliStorm.TelegramBot.Core.Domain;
 
 namespace ReceiverCliStorm.TelegramBot.Infrastructer;
@@ -55,7 +56,7 @@ public class Context : DbContext
             .HasDefaultValue(ESessionStatus.Exists);
         sessionBuilder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         sessionBuilder.HasOne(x => x.SessionInfo).WithMany().HasForeignKey(x => x.SessionInfoId);
-        sessionBuilder.HasOne(x => x.DeviceAuthInfo).WithOne().HasForeignKey<Session>(x => x.DeviceAuthInfoId)
+        sessionBuilder.HasOne(x => x.DeviceAuthInfo).WithOne().HasForeignKey<DeviceAuthInfo>(x => x.SessionId)
             .OnDelete(DeleteBehavior.Cascade);
 
         

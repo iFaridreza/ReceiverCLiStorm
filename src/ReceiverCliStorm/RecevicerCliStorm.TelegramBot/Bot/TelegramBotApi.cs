@@ -72,44 +72,44 @@ public class TelegramBotApi : ITelegramBotApi
                 switch (messageText)
                 {
                     case "/start":
-                    {
-                        await OnStart(chatUserId, messageId);
-                    }
+                        {
+                            await OnStart(chatUserId, messageId);
+                        }
                         break;
                     case "/language":
-                    {
-                        await OnLanguage(chatUserId, messageId);
-                    }
+                        {
+                            await OnLanguage(chatUserId, messageId);
+                        }
                         break;
                     case "/infouser":
-                    {
-                        await OnInfoUser(chatUserId, messageId);
-                    }
+                        {
+                            await OnInfoUser(chatUserId, messageId);
+                        }
                         break;
                     case "/cancel":
-                    {
-                        await OnCancel(chatUserId, messageId);
-                    }
+                        {
+                            await OnCancel(chatUserId, messageId);
+                        }
                         break;
                     case "/reload":
-                    {
-                        await OnReload(chatUserId, messageId);
-                    }
+                        {
+                            await OnReload(chatUserId, messageId);
+                        }
                         break;
                     case "/settings":
-                    {
-                        await OnSettings(chatUserId, messageId);
-                    }
+                        {
+                            await OnSettings(chatUserId, messageId);
+                        }
                         break;
                     case "/help":
-                    {
-                        await OnHelp(chatUserId, messageId);
-                    }
+                        {
+                            await OnHelp(chatUserId, messageId);
+                        }
                         break;
                     default:
-                    {
-                        await OnStep(chatUserId, messageId, messageText);
-                    }
+                        {
+                            await OnStep(chatUserId, messageId, messageText);
+                        }
                         break;
                 }
             }
@@ -202,50 +202,50 @@ public class TelegramBotApi : ITelegramBotApi
                 switch (callbackData)
                 {
                     case "IJoin":
-                    {
-                        await OnUpdateIJoin(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateIJoin(chatUserId, messageId);
+                        }
                         break;
                     case "Reload":
-                    {
-                        await OnUpdateReload(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateReload(chatUserId, messageId);
+                        }
                         break;
                     case "UseProxy":
-                    {
-                        await OnUpdateUseProxy(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateUseProxy(chatUserId, messageId);
+                        }
                         break;
                     case $"UseChangeBio":
-                    {
-                        await OnUpdateUseChangeBio(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateUseChangeBio(chatUserId, messageId);
+                        }
                         break;
                     case "UseLogCLi":
-                    {
-                        await OnUpdateUseLogCLi(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateUseLogCLi(chatUserId, messageId);
+                        }
                         break;
                     case "UseCheckReport":
-                    {
-                        await OnUpdateUseCheckReport(chatUserId, messageId);
-                    }
+                        {
+                            await OnUpdateUseCheckReport(chatUserId, messageId);
+                        }
                         break;
                     default:
-                    {
-                        if (callbackData.Contains("ChangePermission_"))
                         {
-                            await OnUpdateChangePermission(chatUserId, messageId, callbackData);
+                            if (callbackData.Contains("ChangePermission_"))
+                            {
+                                await OnUpdateChangePermission(chatUserId, messageId, callbackData);
+                            }
+                            else if (callbackData.Contains("BackupSessions_"))
+                            {
+                                await OnUpdateBackupSessions(chatUserId, messageId, callbackData);
+                            }
+                            else if (callbackData.Contains("Download_"))
+                            {
+                                await OnUpdateDownloadCurrentSession(chatUserId, messageId, callbackData);
+                            }
                         }
-                        else if (callbackData.Contains("BackupSessions_"))
-                        {
-                            await OnUpdateBackupSessions(chatUserId, messageId, callbackData);
-                        }
-                        else if (callbackData.Contains("Download_"))
-                        {
-                            await OnUpdateDownloadCurrentSession(chatUserId, messageId, callbackData);
-                        }
-                    }
                         break;
                 }
             }
@@ -472,12 +472,12 @@ public class TelegramBotApi : ITelegramBotApi
                     Utils.GetText(eLanguageUser, "numberIsNotEmailLogin"));
 
                 await wTelegramClientManager.Disconnect();
-                
+
                 File.Delete(sessionPath);
-                
+
                 return;
             }
-            
+
             if (string.IsNullOrEmpty(state) || state != "verification_code")
             {
                 _logger.Information($"- User {chatUserId} Login Session {phoneNumber} State: {state} Bot");
@@ -486,9 +486,9 @@ public class TelegramBotApi : ITelegramBotApi
                     Utils.GetText(eLanguageUser, "tryAgain"));
 
                 await wTelegramClientManager.Disconnect();
-                
+
                 File.Delete(sessionPath);
-                
+
                 return;
             }
 
@@ -660,7 +660,7 @@ public class TelegramBotApi : ITelegramBotApi
                 SessionInfo sessionInfo = await sessionInfoRepository.GetSingleFirst();
                 User user = await userRepository.Get(chatUserId);
 
-                await sessionRepository.Create(new()
+                Session session = new()
                 {
                     CountryCode = sessionCash.InfoPhoneNumber.CountryCode,
                     Number = sessionCash.InfoPhoneNumber.PhoneNumber,
@@ -675,7 +675,9 @@ public class TelegramBotApi : ITelegramBotApi
                         LangCode = sessionCash.DeviceInfo.LangCode,
                         SystemVersion = sessionCash.DeviceInfo.SystemVersion
                     }
-                });
+                };
+
+                await sessionRepository.Create(session);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     string.Format(Utils.GetText(eLanguageUser, "loginSucsess"), sessionCash.PhoneNumber)
@@ -1030,7 +1032,7 @@ public class TelegramBotApi : ITelegramBotApi
         }
 
         string randomFileName = Path.GetRandomFileName();
-        
+
         string fileName = $"Backup Sessions User {userChatId} {randomFileName}.zip";
 
         ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create);
@@ -1041,16 +1043,16 @@ public class TelegramBotApi : ITelegramBotApi
 
             string sessionPath = Path.Combine(AppContext.BaseDirectory, _appSettings.SessionsPath,
                 string.Concat(phoneNumber, ".session"));
-            
+
             string jsonFileName = $"{phoneNumber}.json";
-            
+
             string jsonPath = Path.Combine(AppContext.BaseDirectory, jsonFileName);
 
             if (File.Exists(jsonPath))
             {
                 File.Delete(jsonPath);
             }
-            
+
             await using FileStream fileStream = new(jsonFileName, FileMode.CreateNew);
             await using StreamWriter writerStream = new(fileStream, Encoding.UTF8);
 
@@ -1076,10 +1078,10 @@ public class TelegramBotApi : ITelegramBotApi
 
             writerStream.Close();
             fileStream.Close();
-            
+
             zipArchive.CreateEntryFromFile(sessionPath, Path.GetFileName(sessionPath));
             zipArchive.CreateEntryFromFile(jsonPath, jsonFileName);
-            
+
             File.Delete(jsonPath);
         }
 
@@ -1510,14 +1512,14 @@ public class TelegramBotApi : ITelegramBotApi
         switch (userStep.Step)
         {
             case "LoginCode":
-            {
-                await OnUpdateLoginCode(chatUserId, messageId, messageText);
-            }
+                {
+                    await OnUpdateLoginCode(chatUserId, messageId, messageText);
+                }
                 break;
             case "Password2Fa":
-            {
-                await OnUpdatePassword2Fa(chatUserId, messageId, messageText);
-            }
+                {
+                    await OnUpdatePassword2Fa(chatUserId, messageId, messageText);
+                }
                 break;
         }
     }
@@ -1671,19 +1673,19 @@ public class TelegramBotApi : ITelegramBotApi
             switch (sudo.Language)
             {
                 case ELanguage.En:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.Fa);
+                    }
                     break;
                 case ELanguage.Fa:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                    }
                     break;
                 default:
-                {
-                    await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
-                }
+                    {
+                        await sudoRepository.ChangeLanguage(sudo, ELanguage.En);
+                    }
                     break;
             }
 
@@ -1702,19 +1704,19 @@ public class TelegramBotApi : ITelegramBotApi
         switch (user.Language)
         {
             case ELanguage.En:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.Fa);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.Fa);
+                }
                 break;
             case ELanguage.Fa:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.En);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.En);
+                }
                 break;
             default:
-            {
-                await userRepository.ChangeLanguage(user, ELanguage.En);
-            }
+                {
+                    await userRepository.ChangeLanguage(user, ELanguage.En);
+                }
                 break;
         }
 
