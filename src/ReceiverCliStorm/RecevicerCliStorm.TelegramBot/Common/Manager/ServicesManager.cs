@@ -41,7 +41,8 @@ public static class ServicesManager
 
     public static void InjectWTelegramFactory()
     {
-        _serviceCollection.AddScoped<IWTelegramManagerFactory, WTelegramManagerFactory>();
+        _serviceCollection.AddScoped<WTelegramOptions>();
+        _serviceCollection.AddScoped<IWTelegramManagerBuilder, WTelegramManagerBuilder>();
     }
 
     public static void InjectTelegramLogger(string token, string chatIdLog)

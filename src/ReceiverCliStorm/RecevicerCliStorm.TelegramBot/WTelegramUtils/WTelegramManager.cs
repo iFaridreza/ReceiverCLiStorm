@@ -7,25 +7,12 @@ namespace ReceiverCliStorm.TelegramBot.WTelegramUtils;
 public class WTelegramManager : IWTelegramManager
 {
     private readonly Client _client;
-    private readonly string _apiId;
-    private readonly string _apiHash;
-    private readonly string _sessionPath;
-    private readonly string _deviceModel;
-    private readonly string _systemVersion;
-    private readonly string _appVersion;
-    private readonly string _langCode;
-    
-    public WTelegramManager(string apiId, string apiHash, string deviceModel, string systemVersion, string appVersion,
-        string langCode, string sessionPath, Action<int, string>? logging)
+    private readonly WTelegramOptions _wTelegramOptions;
+
+    public WTelegramManager(WTelegramOptions wTelegramOptions)
     {
-        _apiId = apiId;
-        _apiHash = apiHash;
-        _sessionPath = sessionPath;
-        _deviceModel = deviceModel;
-        _systemVersion = systemVersion;
-        _appVersion = appVersion;
-        _langCode = langCode;
-        Helpers.Log = logging;
+        _wTelegramOptions = wTelegramOptions;
+        Helpers.Log = _wTelegramOptions.Loging;
         _client = new(Config);
     }
 
@@ -33,17 +20,17 @@ public class WTelegramManager : IWTelegramManager
     {
         string? result = what switch
         {
-            "api_id" => _apiId,
-            "api_hash" => _apiHash,
-            "session_pathname" => _sessionPath,
-            "device_model" => _deviceModel,
-            "system_version" => _systemVersion,
-            "app_version" => _appVersion,
-            "lang_code" => _langCode,
+            "api_id" => _wTelegramOptions.ApiId,
+            "api_hash" => _wTelegramOptions.ApiHash,
+            "session_pathname" => _wTelegramOptions.SessionPath,
+            "device_model" => _wTelegramOptions.DeviceModel,
+            "system_version" => _wTelegramOptions.SystemVersion,
+            "app_version" => _wTelegramOptions.AppVersion,
+            "lang_code" => _wTelegramOptions.LangCode,
             "email" => what,
             _ => null
         };
-        
+
         //email => email_verification_code
         
         return result;

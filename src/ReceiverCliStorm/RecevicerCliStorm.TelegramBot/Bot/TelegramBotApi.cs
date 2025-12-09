@@ -316,8 +316,8 @@ public class TelegramBotApi : ITelegramBotApi
         ISessionInfoRepository sessionInfoRepository =
             scope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
         ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
-        IWTelegramManagerFactory wTelegramClientManagerFactory =
-            scope.ServiceProvider.GetRequiredService<IWTelegramManagerFactory>();
+        IWTelegramManagerBuilder wTelegramManagerBuilder =
+            scope.ServiceProvider.GetRequiredService<IWTelegramManagerBuilder>();
 
         bool anySudo = await sudoRepository.Any(chatUserId);
 
@@ -416,21 +416,20 @@ public class TelegramBotApi : ITelegramBotApi
 
         DeviceInfo deviceInfo = DeviceInfoManager.RandomDevice();
 
-        IWTelegramManager wTelegramClientManager = wTelegramClientManagerFactory
-            .Create(
-                sessionInfo.ApiId,
-                sessionInfo.ApiHash,
-                deviceInfo.DeviceModel,
-                deviceInfo.SystemVersion,
-                deviceInfo.AppVersion,
-                deviceInfo.LangCode,
-                sessionPath,
-                loging
-            );
+        IWTelegramManager wTelegramManager = wTelegramManagerBuilder.
+                            WithApiId(sessionInfo.ApiId).
+                            WithApiHash(sessionInfo.ApiHash).
+                            WithDeviceModel(deviceInfo.DeviceModel).
+                            WithSystemVersion(deviceInfo.SystemVersion).
+                            WithAppVersion(deviceInfo.AppVersion).
+                            WithLangCode(deviceInfo.LangCode).
+                            WithSessionPath(sessionPath).
+                            WithLoging(loging).
+                            Build();
 
         try
         {
-            await wTelegramClientManager.Connect();
+            await wTelegramManager.Connect();
 
             if (settings.UseProxy)
             {
@@ -450,7 +449,7 @@ public class TelegramBotApi : ITelegramBotApi
                     {
                         _logger.Information($"- Log Session: \n{phoneNumber}\n\nUse Proxy: {proxy.Ip}:{proxy.Port}");
 
-                        wTelegramClientManager.UseScokcs5Proxy(proxy.Ip, port, proxy.Username, proxy.Password);
+                        wTelegramManager.UseScokcs5Proxy(proxy.Ip, port, proxy.Username, proxy.Password);
 
                         break;
                     }
@@ -462,7 +461,7 @@ public class TelegramBotApi : ITelegramBotApi
                 }
             }
 
-            string state = await wTelegramClientManager.Login(phoneNumber);
+            string state = await wTelegramManager.Login(phoneNumber);
 
             if (state == "email")
             {
@@ -471,7 +470,7 @@ public class TelegramBotApi : ITelegramBotApi
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "numberIsNotEmailLogin"));
 
-                await wTelegramClientManager.Disconnect();
+                await wTelegramManager.Disconnect();
 
                 File.Delete(sessionPath);
 
@@ -485,7 +484,7 @@ public class TelegramBotApi : ITelegramBotApi
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "tryAgain"));
 
-                await wTelegramClientManager.Disconnect();
+                await wTelegramManager.Disconnect();
 
                 File.Delete(sessionPath);
 
@@ -513,7 +512,7 @@ public class TelegramBotApi : ITelegramBotApi
                 PhoneNumber = phoneNumber,
                 SessionPath = sessionPath,
                 InfoPhoneNumber = infoPhoneNumber,
-                WTelegramManager = wTelegramClientManager,
+                WTelegramManager = wTelegramManager,
                 DeviceInfo = deviceInfo
             });
 
@@ -525,7 +524,7 @@ public class TelegramBotApi : ITelegramBotApi
             _logger.Information($"- User {chatUserId} Session {phoneNumber} Invalid Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneInvalid"));
-            await wTelegramClientManager.Disconnect();
+            await wTelegramManager.Disconnect();
             File.Delete(sessionPath);
         }
         catch (Exception ex) when (ex.Message == "PHONE_NUMBER_FLOOD")
@@ -533,7 +532,7 @@ public class TelegramBotApi : ITelegramBotApi
             _logger.Information($"- User {chatUserId} Session {phoneNumber} Flood Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneFlood"));
-            await wTelegramClientManager.Disconnect();
+            await wTelegramManager.Disconnect();
             File.Delete(sessionPath);
         }
         catch (Exception ex) when (ex.Message == "PHONE_NUMBER_BANNED")
@@ -541,7 +540,7 @@ public class TelegramBotApi : ITelegramBotApi
             _logger.Information($"- User {chatUserId} Session {phoneNumber} Ban Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "phoneBan"));
-            await wTelegramClientManager.Disconnect();
+            await wTelegramManager.Disconnect();
             File.Delete(sessionPath);
         }
         catch (Exception ex) when (
@@ -553,7 +552,7 @@ public class TelegramBotApi : ITelegramBotApi
             _logger.Warning(ex, $"- User {chatUserId} Session {phoneNumber} Bot");
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "tryAgain"));
-            await wTelegramClientManager.Disconnect();
+            await wTelegramManager.Disconnect();
             File.Delete(sessionPath);
         }
     }
@@ -1612,7 +1611,7 @@ public class TelegramBotApi : ITelegramBotApi
             _logger.Information($"- Sudo {chatUserId} /info bot");
 
             bool anyStep = await userStepRepository.Any(chatUserId);
-
+             
             if (anyStep)
             {
                 await userStepRepository.Remove(chatUserId);
