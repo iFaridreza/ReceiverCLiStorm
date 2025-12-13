@@ -40,11 +40,11 @@ public class StepTrigger : IJob
             ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
             ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger>();
 
-            IEnumerable<Step> userSteps = await stepRepository.GetAll();
+            IEnumerable<Step> steps = await stepRepository.GetAll();
             
             DateTime dateNow = DateTime.Now;
             
-            IEnumerable<Step> expiredSteps = userSteps.Where(x => x.ExpierDateTime <= dateNow).ToList();
+            IEnumerable<Step> expiredSteps = steps.Where(x => x.ExpierDateTime <= dateNow).ToList();
 
             foreach (Step item in expiredSteps)
             {
