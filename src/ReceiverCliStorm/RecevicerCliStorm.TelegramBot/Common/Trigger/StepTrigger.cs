@@ -36,19 +36,19 @@ public class StepTrigger : IJob
             await _semaphoreSlim.WaitAsync();
 
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
-            IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+            IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
             ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
             ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger>();
 
-            IEnumerable<UserStep> userSteps = await userStepRepository.GetAll();
+            IEnumerable<Step> userSteps = await stepRepository.GetAll();
             
             DateTime dateNow = DateTime.Now;
             
-            IEnumerable<UserStep> expiredSteps = userSteps.Where(x => x.ExpierDateTime <= dateNow).ToList();
+            IEnumerable<Step> expiredSteps = userSteps.Where(x => x.ExpierDateTime <= dateNow).ToList();
 
-            foreach (UserStep item in expiredSteps)
+            foreach (Step item in expiredSteps)
             {
-                await userStepRepository.Remove(item.ChatId);
+                await stepRepository.Remove(item.ChatId);
                 
                 try
                 {

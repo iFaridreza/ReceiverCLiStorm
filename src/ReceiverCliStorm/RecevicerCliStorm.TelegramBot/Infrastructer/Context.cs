@@ -14,7 +14,7 @@ public class Context : DbContext
     public DbSet<User> User { get; set; }
     public DbSet<Session> Session { get; set; }
     public DbSet<SessionInfo> SessionInfo { get; set; }
-    public DbSet<UserStep> UserStep { get; set; }
+    public DbSet<Step> Step { get; set; }
     public DbSet<Settings> Settings { get; set; }
 
     public DbSet<DeviceAuthInfo> DeviceAuthInfo { get; set; }
@@ -73,13 +73,13 @@ public class Context : DbContext
         deviceAuthInfoBuilder.Property(x => x.AppVersion).HasMaxLength(20).IsRequired();
         deviceAuthInfoBuilder.Property(x => x.LangCode).HasMaxLength(2).IsRequired();
 
-        var userStepBuilder = modelBuilder.Entity<UserStep>();
-        userStepBuilder.ToTable("UserStep");
-        userStepBuilder.HasKey(x => x.Id);
-        userStepBuilder.HasIndex(x => x.ChatId).IsUnique();
-        userStepBuilder.Property(x => x.Step).HasMaxLength(100).IsRequired();
-        userStepBuilder.Property(x => x.ExpierDateTime).IsRequired();
-        userStepBuilder.Property(x => x.ChatId).HasMaxLength(50).IsRequired();
+        var stepBuilder = modelBuilder.Entity<Step>();
+        stepBuilder.ToTable("Step");
+        stepBuilder.HasKey(x => x.Id);
+        stepBuilder.HasIndex(x => x.ChatId).IsUnique();
+        stepBuilder.Property(x => x.State).HasMaxLength(100).IsRequired();
+        stepBuilder.Property(x => x.ExpierDateTime).IsRequired();
+        stepBuilder.Property(x => x.ChatId).HasMaxLength(50).IsRequired();
 
 
         var settingsBuilder = modelBuilder.Entity<Settings>();

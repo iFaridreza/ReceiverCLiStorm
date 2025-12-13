@@ -31,7 +31,7 @@ public static class ServicesManager
 
     public static void InjectRepository()
     {
-        _serviceCollection.AddScoped<IUserStepRepository, UserStepRepository>();
+        _serviceCollection.AddScoped<IStepRepository, StepRepository>();
         _serviceCollection.AddScoped<IUserRepository, UserRepository>();
         _serviceCollection.AddScoped<ISudoRepository, SudoRepository>();
         _serviceCollection.AddScoped<ISessionRepository, SessionRepository>();

@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 
 namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
-public static class SessionCashManager
+public static class SessionCasheManager
 {
     private static readonly ConcurrentDictionary<long, SessionCashe> _keyValuePairs;
 
-    static SessionCashManager() => _keyValuePairs = new();
+    static SessionCasheManager() => _keyValuePairs = new();
 
     public static void AddOrUpdate(long chatId, SessionCashe sessionCashe)
     {

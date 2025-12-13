@@ -58,7 +58,7 @@ public class TelegramBotApi : ITelegramBotApi
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
             ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
             IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+            IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
 
             long chatUserId = message.From.Id;
             int messageId = message.MessageId;
@@ -117,24 +117,24 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 _logger.Error(ex, nameof(Exception));
 
-                bool anyStep = await userStepRepository.Any(chatUserId);
+                bool anyStep = await stepRepository.Any(chatUserId);
 
                 if (anyStep)
                 {
-                    await userStepRepository.Remove(chatUserId);
+                    await stepRepository.Remove(chatUserId);
                 }
 
-                bool anyCashe = SessionCashManager.Any(chatUserId);
+                bool anyCashe = SessionCasheManager.Any(chatUserId);
 
                 if (anyCashe)
                 {
-                    SessionCashe sessionCashe = SessionCashManager.Get(chatUserId);
+                    SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
                     IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
                     await wTelegramClientManager.Disconnect();
 
-                    SessionCashManager.Remove(chatUserId);
+                    SessionCasheManager.Remove(chatUserId);
                 }
 
                 bool anySudo = await sudoRepository.Any(chatUserId);
@@ -184,7 +184,7 @@ public class TelegramBotApi : ITelegramBotApi
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
             ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
             IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+            IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
 
             long chatUserId = update.CallbackQuery.Message.Chat.Id;
             int messageId = update.CallbackQuery.Message.MessageId;
@@ -253,24 +253,24 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 _logger.Error(ex, nameof(Exception));
 
-                bool anyStep = await userStepRepository.Any(chatUserId);
+                bool anyStep = await stepRepository.Any(chatUserId);
 
                 if (anyStep)
                 {
-                    await userStepRepository.Remove(chatUserId);
+                    await stepRepository.Remove(chatUserId);
                 }
 
-                bool anyCashe = SessionCashManager.Any(chatUserId);
+                bool anyCashe = SessionCasheManager.Any(chatUserId);
 
                 if (anyCashe)
                 {
-                    SessionCashe sessionCashe = SessionCashManager.Get(chatUserId);
+                    SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
                     IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
                     await wTelegramClientManager.Disconnect();
 
-                    SessionCashManager.Remove(chatUserId);
+                    SessionCasheManager.Remove(chatUserId);
                 }
 
                 bool anySudo = await sudoRepository.Any(chatUserId);
@@ -311,7 +311,7 @@ public class TelegramBotApi : ITelegramBotApi
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
         ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
         ISessionInfoRepository sessionInfoRepository =
             scope.ServiceProvider.GetRequiredService<ISessionInfoRepository>();
@@ -493,21 +493,21 @@ public class TelegramBotApi : ITelegramBotApi
 
             _logger.Information($"- User {chatUserId} Login Session {phoneNumber} State: {state} Bot");
 
-            bool anyStep = await userStepRepository.Any(chatUserId);
+            bool anyStep = await stepRepository.Any(chatUserId);
 
             if (anyStep)
             {
-                await userStepRepository.Remove(chatUserId);
+                await stepRepository.Remove(chatUserId);
             }
 
-            await userStepRepository.Create(new()
+            await stepRepository.Create(new()
             {
                 ChatId = chatUserId,
-                Step = "LoginCode",
+                State = "LoginCode",
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
-            SessionCashManager.AddOrUpdate(chatUserId, new()
+            SessionCasheManager.AddOrUpdate(chatUserId, new()
             {
                 PhoneNumber = phoneNumber,
                 SessionPath = sessionPath,
@@ -561,7 +561,7 @@ public class TelegramBotApi : ITelegramBotApi
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
         ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
         ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
         ISessionInfoRepository sessionInfoRepository =
@@ -569,11 +569,11 @@ public class TelegramBotApi : ITelegramBotApi
 
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
-        bool anyCashe = SessionCashManager.Any(chatUserId);
+        bool anyCashe = SessionCasheManager.Any(chatUserId);
 
         if (!anyCashe)
         {
-            await userStepRepository.Remove(chatUserId);
+            await stepRepository.Remove(chatUserId);
 
             _logger.Information($"- User {chatUserId} Session Cashe Not Found Bot");
 
@@ -583,7 +583,7 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        SessionCashe sessionCashe = SessionCashManager.Get(chatUserId);
+        SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
         bool isValidLoginCode = int.TryParse(messageText, out _);
         const int validLenghtLoginCode = 5;
@@ -600,8 +600,8 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        await userStepRepository.Remove(chatUserId);
-        SessionCashManager.Remove(chatUserId);
+        await stepRepository.Remove(chatUserId);
+        SessionCasheManager.Remove(chatUserId);
 
         Message msgWiteProsessing = await _telegramBotClient.SendMessage(chatUserId,
             Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
@@ -689,14 +689,14 @@ public class TelegramBotApi : ITelegramBotApi
                 _logger.Information(
                     $"- User {chatUserId} Invalid Login Code {messageText} Invalid {sessionCashe.PhoneNumber} Bot");
 
-                await userStepRepository.Create(new()
+                await stepRepository.Create(new()
                 {
                     ChatId = chatUserId,
-                    Step = "LoginCode",
+                    State = "LoginCode",
                     ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
                 });
 
-                SessionCashManager.AddOrUpdate(chatUserId, sessionCashe);
+                SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     string.Format(Utils.GetText(eLanguageUser, "loginCode"), sessionCashe.PhoneNumber));
@@ -705,14 +705,14 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 _logger.Information($"- User {chatUserId} Need 2Fa Password For Phone {sessionCashe.PhoneNumber} Bot");
 
-                await userStepRepository.Create(new()
+                await stepRepository.Create(new()
                 {
                     ChatId = chatUserId,
-                    Step = "Password2Fa",
+                    State = "Password2Fa",
                     ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
                 });
 
-                SessionCashManager.AddOrUpdate(chatUserId, sessionCashe);
+                SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "password2Fa"));
@@ -765,14 +765,14 @@ public class TelegramBotApi : ITelegramBotApi
             ex.Message.Contains("A connection attempt failed"))
         {
             _logger.Warning(ex, $"- User {chatUserId} Login Session {sessionCashe.PhoneNumber} Bot");
-            await userStepRepository.Create(new()
+            await stepRepository.Create(new()
             {
                 ChatId = chatUserId,
-                Step = "LoginCode",
+                State = "LoginCode",
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
-            SessionCashManager.AddOrUpdate(chatUserId, sessionCashe);
+            SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
 
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 string.Format(Utils.GetText(eLanguageUser, "loginCode"), sessionCashe.PhoneNumber));
@@ -783,7 +783,7 @@ public class TelegramBotApi : ITelegramBotApi
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
         ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
         ISettingsRepository settingsRepository = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
         ISessionInfoRepository sessionInfoRepository =
@@ -791,11 +791,11 @@ public class TelegramBotApi : ITelegramBotApi
 
         ELanguage eLanguageUser = await userRepository.GetLanguage(chatUserId);
 
-        bool anyCashe = SessionCashManager.Any(chatUserId);
+        bool anyCashe = SessionCasheManager.Any(chatUserId);
 
         if (!anyCashe)
         {
-            await userStepRepository.Remove(chatUserId);
+            await stepRepository.Remove(chatUserId);
 
             _logger.Information($"- User {chatUserId} Session Cashe Not Found Bot");
 
@@ -805,10 +805,10 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        SessionCashe sessionCashe = SessionCashManager.Get(chatUserId);
+        SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
-        await userStepRepository.Remove(chatUserId);
-        SessionCashManager.Remove(chatUserId);
+        await stepRepository.Remove(chatUserId);
+        SessionCasheManager.Remove(chatUserId);
 
         Message msgWiteProsessing = await _telegramBotClient.SendMessage(chatUserId,
             Utils.GetText(eLanguageUser, "waite"), ParseMode.Html,
@@ -899,14 +899,14 @@ public class TelegramBotApi : ITelegramBotApi
             {
                 _logger.Information($"- User {chatUserId} Need 2Fa Password For Phone {sessionCashe.PhoneNumber} Bot");
 
-                await userStepRepository.Create(new()
+                await stepRepository.Create(new()
                 {
                     ChatId = chatUserId,
-                    Step = "Password2Fa",
+                    State = "Password2Fa",
                     ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
                 });
 
-                SessionCashManager.AddOrUpdate(chatUserId, sessionCashe);
+                SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
 
                 await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                     Utils.GetText(eLanguageUser, "password2Fa"));
@@ -960,14 +960,14 @@ public class TelegramBotApi : ITelegramBotApi
         {
             _logger.Warning(ex, $"- User {chatUserId} Login Session {sessionCashe.PhoneNumber} Bot");
 
-            await userStepRepository.Create(new()
+            await stepRepository.Create(new()
             {
                 ChatId = chatUserId,
-                Step = "Password2Fa",
+                State = "Password2Fa",
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
-            SessionCashManager.AddOrUpdate(chatUserId, sessionCashe);
+            SessionCasheManager.AddOrUpdate(chatUserId, sessionCashe);
 
             await _telegramBotClient.EditMessageText(chatUserId, msgWiteProsessing.MessageId,
                 Utils.GetText(eLanguageUser, "password2Fa"));
@@ -1439,25 +1439,25 @@ public class TelegramBotApi : ITelegramBotApi
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
         ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
 
         bool anySudo = await sudoRepository.Any(chatUserId);
 
         if (anySudo)
         {
-            bool anySudoStep = await userStepRepository.Any(chatUserId);
+            bool anySudoStep = await stepRepository.Any(chatUserId);
 
             if (!anySudoStep)
             {
                 return;
             }
 
-            UserStep sudoStep = await userStepRepository.Get(chatUserId);
+            Step sudoStep = await stepRepository.Get(chatUserId);
 
             ELanguage eLanguageSudo = await sudoRepository.GetLanguage(chatUserId);
 
-            if (sudoStep.Step == "GetUserChatId")
+            if (sudoStep.State == "GetUserChatId")
             {
                 bool validInput = long.TryParse(messageText, out long userChatId);
 
@@ -1478,7 +1478,7 @@ public class TelegramBotApi : ITelegramBotApi
                     return;
                 }
 
-                await userStepRepository.Remove(chatUserId);
+                await stepRepository.Remove(chatUserId);
 
                 IEnumerable<Session> sessions = await sessionRepository.GetAll(userChatId);
 
@@ -1504,7 +1504,7 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        bool anyUserStep = await userStepRepository.Any(chatUserId);
+        bool anyUserStep = await stepRepository.Any(chatUserId);
 
         if (!anyUserStep)
         {
@@ -1513,9 +1513,9 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
         
-        UserStep userStep = await userStepRepository.Get(chatUserId);
+        Step step = await stepRepository.Get(chatUserId);
 
-        switch (userStep.Step)
+        switch (step.State)
         {
             case "LoginCode":
                 {
@@ -1557,13 +1557,13 @@ public class TelegramBotApi : ITelegramBotApi
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
 
-        bool anyStep = await userStepRepository.Any(chatUserId);
+        bool anyStep = await stepRepository.Any(chatUserId);
 
         if (anyStep)
         {
-            await userStepRepository.Remove(chatUserId);
+            await stepRepository.Remove(chatUserId);
         }
 
         bool anySudo = await sudoRepository.Any(chatUserId);
@@ -1581,11 +1581,11 @@ public class TelegramBotApi : ITelegramBotApi
             return;
         }
 
-        bool anySessionCashe = SessionCashManager.Any(chatUserId);
+        bool anySessionCashe = SessionCasheManager.Any(chatUserId);
 
         if (anySessionCashe)
         {
-            SessionCashe sessionCashe = SessionCashManager.Get(chatUserId);
+            SessionCashe sessionCashe = SessionCasheManager.Get(chatUserId);
 
             IWTelegramManager wTelegramClientManager = sessionCashe.WTelegramManager;
 
@@ -1609,7 +1609,7 @@ public class TelegramBotApi : ITelegramBotApi
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
         IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
         ISessionRepository sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
-        IUserStepRepository userStepRepository = scope.ServiceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = scope.ServiceProvider.GetRequiredService<IStepRepository>();
 
         bool anySudo = await sudoRepository.Any(chatUserId);
 
@@ -1617,17 +1617,17 @@ public class TelegramBotApi : ITelegramBotApi
         {
             _logger.Information($"- Sudo {chatUserId} /info bot");
 
-            bool anyStep = await userStepRepository.Any(chatUserId);
+            bool anyStep = await stepRepository.Any(chatUserId);
              
             if (anyStep)
             {
-                await userStepRepository.Remove(chatUserId);
+                await stepRepository.Remove(chatUserId);
             }
 
-            await userStepRepository.Create(new()
+            await stepRepository.Create(new()
             {
-                Step = "GetUserChatId",
                 ChatId = chatUserId,
+                State = "GetUserChatId",
                 ExpierDateTime = Utils.GetDateTime(_appSettings.AskTimeOutMinute)
             });
 
@@ -1842,18 +1842,18 @@ public class TelegramBotApi : ITelegramBotApi
     {
         await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
         ISudoRepository sudoRepository = scope.ServiceProvider.GetRequiredService<ISudoRepository>();
-        IUserStepRepository userStepRepository = _serviceProvider.GetRequiredService<IUserStepRepository>();
+        IStepRepository stepRepository = _serviceProvider.GetRequiredService<IStepRepository>();
 
         _logger.Information($"- Sudo {chatUserId} Confirm Reload Bot");
 
         Message removeButton =
             await _telegramBotClient.EditMessageReplyMarkup(chatUserId, messageId, replyMarkup: null);
 
-        bool anyStep = await userStepRepository.Any(chatUserId);
+        bool anyStep = await stepRepository.Any(chatUserId);
 
         if (anyStep)
         {
-            await userStepRepository.Remove(chatUserId);
+            await stepRepository.Remove(chatUserId);
         }
 
         Process infoCurrentProcess = Process.GetCurrentProcess();

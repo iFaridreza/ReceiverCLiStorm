@@ -2,11 +2,11 @@
 
 namespace ReceiverCliStorm.TelegramBot.Core.IRepository;
 
-public interface IUserStepRepository
+public interface IStepRepository
 {
-    Task Create(UserStep userStep);
+    Task Create(Step step);
     Task<bool> Any(long chatId);
-    Task<UserStep> Get(long chatId);
+    Task<Step> Get(long chatId);
     Task Remove(long chatId);
-    Task<IEnumerable<UserStep>> GetAll();
+    Task<IEnumerable<Step>> GetAll();
 }
