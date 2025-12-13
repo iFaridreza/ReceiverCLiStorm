@@ -4,7 +4,7 @@ using ReceiverCliStorm.TelegramBot.Common.Dto;
 
 namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
-public class ProxyManager
+public static class ProxyManager
 {
     private static IEnumerable<Proxy> _proxies { get; set; }
 

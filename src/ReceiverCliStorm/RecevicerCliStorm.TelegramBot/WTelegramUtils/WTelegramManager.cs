@@ -4,7 +4,7 @@ using WTelegram;
 
 namespace ReceiverCliStorm.TelegramBot.WTelegramUtils;
 
-public class WTelegramManager : IWTelegramManager
+public sealed class WTelegramManager : IWTelegramManager
 {
     private readonly Client _client;
     private readonly WTelegramOptions _wTelegramOptions;

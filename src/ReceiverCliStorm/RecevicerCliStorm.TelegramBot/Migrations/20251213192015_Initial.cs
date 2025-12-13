@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ReceiverCliStorm.TelegramBot.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -93,7 +93,7 @@ namespace ReceiverCliStorm.TelegramBot.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     CountryCode = table.Column<string>(type: "TEXT", maxLength: 5, nullable: false),
                     Number = table.Column<string>(type: "TEXT", nullable: false),
-                    ESessionStatus = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "Exists"),
+                    SessionStatus = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "Exists"),
                     RegisterDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     UserId = table.Column<long>(type: "INTEGER", nullable: false),
                     SessionInfoId = table.Column<long>(type: "INTEGER", nullable: false)

@@ -65,12 +65,6 @@ namespace ReceiverCliStorm.TelegramBot.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ESessionStatus")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Exists");
-
                     b.Property<string>("Number")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -80,6 +74,12 @@ namespace ReceiverCliStorm.TelegramBot.Migrations
 
                     b.Property<long>("SessionInfoId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("SessionStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Exists");
 
                     b.Property<long>("UserId")
                         .HasColumnType("INTEGER");

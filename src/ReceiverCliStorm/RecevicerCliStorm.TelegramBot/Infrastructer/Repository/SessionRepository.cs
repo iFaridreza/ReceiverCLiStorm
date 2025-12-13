@@ -55,9 +55,9 @@ public class SessionRepository : ISessionRepository
         return sessions;
     }
 
-    public async Task UpdateStatus(Session session, ESessionStatus eSessionStatus)
+    public async Task UpdateStatus(Session session, ESessionStatus sessionStatus)
     {
-        session.ESessionStatus = eSessionStatus;
+        session.SessionStatus = sessionStatus;
         _context.Session.Update(session);
         await _context.SaveChangesAsync();
     }

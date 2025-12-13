@@ -5,23 +5,23 @@ namespace ReceiverCliStorm.TelegramBot.Common.Manager;
 
 public static class SessionCashManager
 {
-    private static readonly ConcurrentDictionary<long, SessionCash> _keyValuePairs;
+    private static readonly ConcurrentDictionary<long, SessionCashe> _keyValuePairs;
 
     static SessionCashManager() => _keyValuePairs = new();
 
-    public static void AddOrUpdate(long chatId, SessionCash sessionCash)
+    public static void AddOrUpdate(long chatId, SessionCashe sessionCashe)
     {
         _keyValuePairs.AddOrUpdate(chatId,
-            _ => sessionCash,
-            (_, _) => sessionCash
+            _ => sessionCashe,
+            (_, _) => sessionCashe
         );
     }
 
     public static bool Any(long chatId) => _keyValuePairs.ContainsKey(chatId);
 
-    public static SessionCash Get(long chatId)
+    public static SessionCashe Get(long chatId)
     {
-        _keyValuePairs.TryGetValue(chatId, out SessionCash? sessionCashe);
+        _keyValuePairs.TryGetValue(chatId, out SessionCashe? sessionCashe);
 
         if (sessionCashe is null)
         {

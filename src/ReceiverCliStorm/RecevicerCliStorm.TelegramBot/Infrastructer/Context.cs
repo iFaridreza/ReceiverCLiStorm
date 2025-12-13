@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ReceiverCliStorm.TelegramBot.Common.Dto;
 using ReceiverCliStorm.TelegramBot.Core.Domain;
 
 namespace ReceiverCliStorm.TelegramBot.Infrastructer;
@@ -52,7 +51,7 @@ public class Context : DbContext
         sessionBuilder.Property(x => x.CountryCode).HasMaxLength(5).IsRequired();
         sessionBuilder.Property(x => x.Number).IsRequired();
         sessionBuilder.Property(x => x.RegisterDate).IsRequired();
-        sessionBuilder.Property(x => x.ESessionStatus).HasConversion(new EnumToStringConverter<ESessionStatus>())
+        sessionBuilder.Property(x => x.SessionStatus).HasConversion(new EnumToStringConverter<ESessionStatus>())
             .HasDefaultValue(ESessionStatus.Exists);
         sessionBuilder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         sessionBuilder.HasOne(x => x.SessionInfo).WithMany().HasForeignKey(x => x.SessionInfoId);
